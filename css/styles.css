@@ -1256,6 +1256,141 @@ button.list-item.card:hover {
   white-space: pre-wrap;
 }
 
+/* Mapa — galeria de imagens */
+.mapa-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.85rem;
+}
+
+.mapa-fig {
+  margin: 0;
+  border-radius: 0.85rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.mapa-fig img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.mapa-fig figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.mapa-fig figcaption span {
+  color: var(--muted);
+}
+
+/* Bíblia */
+.bible-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.bible-tabs button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bible-tabs button.active {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent);
+}
+
+.bible-controls {
+  margin-bottom: 1rem;
+}
+
+.bible-verses {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.bible-heading {
+  margin: 0.85rem 0 0.25rem;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+.bible-verse {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.85rem;
+}
+
+.bible-verse-num {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.95rem;
+  padding-top: 0.15rem;
+}
+
+.bible-en,
+.bible-pt {
+  margin: 0 0 0.45rem;
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.bible-en {
+  cursor: pointer;
+}
+
+.bible-en .badge,
+.bible-pt .badge {
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+.bible-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.lesson-card {
+  position: sticky;
+  bottom: 5.5rem;
+  z-index: 5;
+  margin-top: 1rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--accent);
+}
+
+.lesson-words {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 900px) {
+  .lesson-card {
+    bottom: 1rem;
+  }
+}
+
 @media print {
   .no-print {
     display: none !important;

@@ -1,21 +1,28 @@
-# Painel Ministração
+# Âncora · Painel de Ministração
 
-Painel estático para montar e estudar mensagens bíblicas nas frentes **Igreja**, **Empresa**, **Evangelismo** e **EBD**.
+Painel estático para montar e estudar mensagens bíblicas (Igreja · Empresa · Evangelismo · EBD), com Bíblia EN/PT gratuita e planos de leitura.
 
-Layout inspirado no Arjus (sidebar no desktop, menu inferior no celular, cards limpos).
+**Online:** https://painel-ministracao.vercel.app  
+**Repo:** `andrade6991/painel-ministracao`
 
-## Uso
+## O que tem
 
-1. Abra o site (local ou Vercel).
-2. No **primeiro acesso**, gere e guarde a senha → baixe `auth-hash.json`.
-3. Coloque o hash em `data/auth-hash.json` e faça push (mesma senha na WEB).
-4. Crie mensagens → estude **uma etapa por vez** → mapa mental → publique só o pronto.
-5. Em **Config**, exporte o pacote `data` para backup/commit.
+- **Acervo** com modo foco numa ministração
+- **Nova = âncora** (Frente + Tema + Texto-base); o resto vem da análise no Cursor
+- **Linha** tópicos 1–10 + prompt Rol/Objetivo/Contexto/Especificidade
+- **Mapa mental** com imagens ilustrativas
+- **EBD** separada (aula didática; só o montado publicado)
+- **Bíblia** multi-idioma (API AO Lab, sem custo): defaults **BSB** (EN) + **Open Nova Bíblia Viva** (PT), cache IndexedDB, paralelo EN|PT, favoritos, copiar, usar na âncora, mini-aula de inglês, planos de leitura
+- Transcrições **não** ficam na WEB (só input local no Cursor)
+
+## Senha
+
+Senha fixa configurada em `js/auth.js` / `data/auth-hash.json`. Há opção “Ver publicados” sem login completo.
 
 ## Stack
 
-HTML + CSS + JS (sem build). Deploy Vercel: Framework **Other**, output na raiz.
+HTML + CSS + JS (sem build). Deploy Vercel: Framework **Other**, raiz do projeto.
 
-## Repo
+## Análise no Cursor
 
-`andrade6991/painel-ministracao`
+Ver [`docs/PROMPT-ANALISE.md`](docs/PROMPT-ANALISE.md).

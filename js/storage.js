@@ -2,7 +2,6 @@ const KEY = "painel_ministracao_v1";
 
 const emptyStore = () => ({
   messages: [],
-  transcriptions: [],
   ebd: [],
   session: false,
   publicOnly: false,
@@ -12,14 +11,17 @@ export function loadStore() {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return emptyStore();
-    return { ...emptyStore(), ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    const store = { ...emptyStore(), ...parsed };
+    delete store.transcriptions;
+    return store;
   } catch {
     return emptyStore();
   }
 }
 
 export function saveStore(store) {
-  const { session, publicOnly, ...data } = store;
+  const { session, publicOnly, transcriptions, ...data } = store;
   localStorage.setItem(KEY, JSON.stringify(data));
   store.session = session;
   store.publicOnly = publicOnly;
@@ -42,7 +44,6 @@ export function downloadJson(filename, data) {
 export async function mergeSeedData(store) {
   const files = [
     ["data/messages.json", "messages"],
-    ["data/transcriptions.json", "transcriptions"],
     ["data/ebd-lessons.json", "ebd"],
   ];
   for (const [path, key] of files) {

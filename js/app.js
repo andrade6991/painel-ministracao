@@ -1,21 +1,21 @@
 import { clearSessionFlag, hasSessionOk, markSessionOk, verifyPassword } from "./auth.js";
-
-const ICO_SOL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`;
-const ICO_LUA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>`;
-const ICO_OLHO = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const ICO_OLHO_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2"/><path d="M6.1 6.1C3.7 7.8 2 12 2 12s3.5 7 10 7a10.3 10.3 0 0 0 4.3-.9"/></svg>`;
 import { downloadJson, loadStore, mergeSeedData, saveStore, uid } from "./storage.js";
 import {
   FRENTES,
   STEPS,
   emptyEbd,
   emptyMessage,
-  emptyTranscription,
   mindBranches,
   progress,
   promptAnalise,
   stepDone,
 } from "./study.js";
+import * as Bible from "./bible.js";
+
+const ICO_SOL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`;
+const ICO_LUA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>`;
+const ICO_OLHO = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const ICO_OLHO_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2"/><path d="M6.1 6.1C3.7 7.8 2 12 2 12s3.5 7 10 7a10.3 10.3 0 0 0 4.3-.9"/></svg>`;
 
 const state = {
   store: loadStore(),
@@ -25,6 +25,23 @@ const state = {
   filterFrente: "todas",
   filterQ: "",
   publicOnly: false,
+  bible: {
+    prefs: Bible.loadPrefs(),
+    book: "JHN",
+    chapter: 3,
+    books: [],
+    translations: [],
+    languages: [],
+    enChapter: null,
+    ptChapter: null,
+    loading: false,
+    error: "",
+    lesson: null,
+    plans: [],
+    planId: "nt90",
+    tab: "ler",
+  },
+  pendingAnchor: null,
 };
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -82,7 +99,6 @@ function persist() {
   saveStore(state.store);
 }
 
-/* —— Auth UI —— */
 async function bootAuth() {
   applyTema();
   if (hasSessionOk()) {
@@ -140,6 +156,11 @@ function bindAuth() {
 async function enterApp(first, publicOnly = false) {
   state.publicOnly = publicOnly;
   state.store = await mergeSeedData(loadStore());
+  const pos = Bible.loadPosition();
+  if (pos?.book) {
+    state.bible.book = pos.book;
+    state.bible.chapter = pos.chapter || 1;
+  }
   $("#auth-screen").classList.add("hidden");
   $("#app-screen").classList.remove("hidden");
   buildNav();
@@ -154,9 +175,7 @@ function buildNav() {
         { id: "inicio", label: "Início", ico: "✝" },
         { id: "biblioteca", label: "Acervo", ico: "☰" },
         { id: "nova", label: "Âncora", ico: "＋" },
-        { id: "estudo", label: "Linha", ico: "◇" },
-        { id: "mapa", label: "Mapa", ico: "✦" },
-        { id: "transcricoes", label: "Vozes", ico: "✎" },
+        { id: "biblia", label: "Bíblia", ico: "◇" },
         { id: "ebd", label: "EBD", ico: "▣" },
         { id: "publicados", label: "Prontos", ico: "◎" },
         { id: "config", label: "Ajustes", ico: "⚙" },
@@ -166,7 +185,7 @@ function buildNav() {
   side.innerHTML = items
     .map(
       (i) =>
-        `<button type="button" class="nav-link ${state.view === i.id ? "active" : ""}" data-nav="${i.id}"><span class="ico">${i.ico}</span>${i.label}</button>`,
+        `<button type="button" class="nav-link ${state.view === i.id || (i.id === "biblioteca" && state.view === "foco") || (i.id === "biblioteca" && state.view === "estudo") || (i.id === "biblioteca" && state.view === "mapa") ? "active" : ""}" data-nav="${i.id}"><span class="ico">${i.ico}</span>${i.label}</button>`,
     )
     .join("");
 
@@ -176,7 +195,7 @@ function buildNav() {
         { id: "inicio", label: "Início", ico: "✝" },
         { id: "biblioteca", label: "Acervo", ico: "☰" },
         { id: "nova", label: "Âncora", fab: true },
-        { id: "estudo", label: "Linha", ico: "◇" },
+        { id: "biblia", label: "Bíblia", ico: "◇" },
         { id: "mais", label: "Mais", ico: "▦" },
       ];
 
@@ -185,7 +204,10 @@ function buildNav() {
       if (i.fab) {
         return `<div class="fab-wrap"><button type="button" class="fab" data-nav="nova" aria-label="Nova âncora">✝</button><span style="font-size:0.68rem;font-weight:600;color:#93aa9f">Âncora</span></div>`;
       }
-      const active = state.view === i.id || (i.id === "mais" && ["mapa", "transcricoes", "ebd", "publicados", "config"].includes(state.view));
+      const active =
+        state.view === i.id ||
+        (i.id === "biblioteca" && ["foco", "estudo", "mapa"].includes(state.view)) ||
+        (i.id === "mais" && ["ebd", "publicados", "config"].includes(state.view));
       return `<button type="button" class="bottom-item ${active ? "active" : ""}" data-nav="${i.id}"><span class="pill">${i.ico}</span>${i.label}</button>`;
     })
     .join("");
@@ -193,11 +215,7 @@ function buildNav() {
   $$("[data-nav]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-nav");
-      if (id === "mais") {
-        state.view = "mais";
-      } else {
-        state.view = id;
-      }
+      state.view = id === "mais" ? "mais" : id;
       buildNav();
       render();
       window.scrollTo(0, 0);
@@ -223,16 +241,16 @@ function go(view, opts = {}) {
   window.scrollTo(0, 0);
 }
 
-/* —— Views —— */
 function render() {
   const root = $("#view-root");
   const map = {
     inicio: viewInicio,
     biblioteca: viewBiblioteca,
+    foco: viewFoco,
     nova: viewNova,
     estudo: viewEstudo,
     mapa: viewMapa,
-    transcricoes: viewTranscricoes,
+    biblia: viewBiblia,
     ebd: viewEbd,
     publicados: viewPublicados,
     config: viewConfig,
@@ -245,6 +263,8 @@ function viewInicio(root) {
   const msgs = state.store.messages;
   const estudo = msgs.filter((m) => m.status === "em estudo" || m.status === "rascunho").length;
   const pronto = msgs.filter((m) => m.publicado || m.status === "pronto").length;
+  const pos = Bible.loadPosition();
+  const contLabel = pos ? `${pos.bookLabel || pos.book} ${pos.chapter}` : "Abrir Bíblia";
 
   root.innerHTML = `
     <div class="page-head">
@@ -253,14 +273,18 @@ function viewInicio(root) {
     </div>
     <div class="quick no-print">
       <button type="button" data-go="nova"><span class="ico">✝</span>Âncora</button>
-      <button type="button" data-go="estudo"><span class="ico">◇</span>Linha</button>
-      <button type="button" data-go="mapa"><span class="ico">✦</span>Mapa</button>
+      <button type="button" data-go="biblioteca"><span class="ico">☰</span>Acervo</button>
+      <button type="button" data-go="biblia"><span class="ico">◇</span>Bíblia</button>
       <button type="button" data-go="ebd"><span class="ico">▣</span>EBD</button>
     </div>
     <div class="grid-2" style="margin-bottom:1rem">
       <div class="card kpi"><span class="label">Em estudo</span><span class="value">${estudo}</span></div>
       <div class="card kpi"><span class="label">Prontos</span><span class="value">${pronto}</span></div>
     </div>
+    <button type="button" class="card list-item" data-go="biblia" style="width:100%;text-align:left;margin-bottom:1rem">
+      <h3>Continuar leitura</h3>
+      <p>${esc(contLabel)} · EN/PT lado a lado</p>
+    </button>
     <div class="card">
       <div class="card-title"><div><h2>Frentes</h2></div></div>
       <div class="grid-2">
@@ -306,7 +330,7 @@ function viewBiblioteca(root) {
     list = list.filter((m) => `${m.tema} ${m.ideiaCentral} ${m.textoBaseRef}`.toLowerCase().includes(q));
   }
   root.innerHTML = `
-    <div class="page-head"><p class="muted">Mensagens</p><h1>Acervo</h1></div>
+    <div class="page-head"><p class="muted">Mensagens montadas</p><h1>Acervo</h1></div>
     <div class="filter-bar no-print">
       <select id="filtro-frente">
         <option value="todas">Todas as frentes</option>
@@ -329,7 +353,7 @@ function viewBiblioteca(root) {
   $$("[data-open]", root).forEach((b) =>
     b.addEventListener("click", () => {
       state.editingId = b.dataset.open;
-      go("estudo");
+      go("foco");
     }),
   );
 }
@@ -338,11 +362,77 @@ function getEditingMessage() {
   return state.store.messages.find((m) => m.id === state.editingId) || null;
 }
 
+function viewFoco(root) {
+  const m = getEditingMessage();
+  if (!m) {
+    root.innerHTML = `<div class="page-head"><h1>Foco</h1></div><div class="card empty">Escolha uma mensagem no Acervo.</div>
+      <button type="button" class="btn btn-primary" style="margin-top:1rem" data-go="biblioteca">Ir ao Acervo</button>`;
+    $("[data-go]", root)?.addEventListener("click", () => go("biblioteca"));
+    return;
+  }
+  const p = progress(m);
+  root.innerHTML = `
+    <div class="page-head">
+      <p class="muted">${frenteLabel(m.frente)} · modo foco</p>
+      <h1>${esc(m.tema || "Mensagem")}</h1>
+      <p class="muted" style="margin:0.35rem 0 0">${esc(m.ideiaCentral || "")}</p>
+    </div>
+    <div class="chips" style="margin-bottom:1rem">
+      ${statusBadge(m.status, m.publicado)}
+      <span class="badge badge-accent">${esc(m.textoBaseRef || "sem texto")}</span>
+      <span class="badge">${p.done}/${p.total} tópicos</span>
+    </div>
+    <div class="card" style="margin-bottom:1rem">
+      <p class="prose-line" style="margin:0;font-style:italic">${esc(m.textoBaseCitacao || "Cole a citação na âncora.")}</p>
+    </div>
+    <div class="card topic-board no-print">
+      <div class="card-title"><div><h2>Tópicos</h2><p>Toque para trabalhar um de cada vez</p></div></div>
+      <div class="topic-grid">
+        ${STEPS.map((s, i) => {
+          const done = stepDone(m, s.id);
+          return `<button type="button" class="topic-item ${done ? "done" : ""}" data-step="${i}">
+            <span class="topic-num">${i + 1}</span>
+            <span class="topic-name">${esc(s.short)}</span>
+            <span class="topic-state">${done ? "ok" : "—"}</span>
+          </button>`;
+        }).join("")}
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <div class="card-title"><div><h2>Visão rápida</h2></div></div>
+      ${renderReadout(m)}
+    </div>
+    ${renderMapaImagens(m)}
+    <div class="btn-row no-print" style="margin-top:1rem">
+      <button type="button" class="btn btn-secondary btn-sm" data-go="biblioteca">Acervo</button>
+      <button type="button" class="btn btn-secondary btn-sm" data-go="nova">Âncora</button>
+      <button type="button" class="btn btn-primary btn-sm" data-go="estudo">Linha</button>
+      <button type="button" class="btn btn-secondary btn-sm" data-go="mapa">Mapa</button>
+    </div>
+  `;
+  $$("[data-go]", root).forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
+  $$("[data-step]", root).forEach((b) =>
+    b.addEventListener("click", () => {
+      m.stepIndex = Number(b.dataset.step);
+      persist();
+      go("estudo");
+    }),
+  );
+}
+
 function viewNova(root) {
   const edit = getEditingMessage();
   const m = edit || emptyMessage(state.filterFrente !== "todas" ? state.filterFrente : "igreja");
+  if (state.pendingAnchor && !edit) {
+    m.textoBaseRef = state.pendingAnchor.ref || m.textoBaseRef;
+    m.textoBaseCitacao = state.pendingAnchor.pt || state.pendingAnchor.en || m.textoBaseCitacao;
+    m.versaoBiblia = state.pendingAnchor.versao || m.versaoBiblia;
+  }
   root.innerHTML = `
     <div class="page-head"><p class="muted">${edit ? "Editar" : "Nova"}</p><h1>${edit ? "Ajustar âncora" : "Âncora bíblica"}</h1></div>
+    <div class="aviso ok no-print">
+      <div><strong>Base da Nova:</strong> Frente + Tema + Ideia central + Texto-base. O restante (conexões, cenários, frases, mapa, imagens) nasce da análise no Cursor e depois sobe para a WEB.</div>
+    </div>
     <form id="form-nova" class="card stack">
       <div class="grid-2">
         <div class="field"><label>Frente</label>
@@ -358,7 +448,7 @@ function viewNova(root) {
       <div class="field"><label>Ideia central (uma frase)</label><input name="ideiaCentral" value="${esc(m.ideiaCentral)}" placeholder="A frase que carrega tudo" /></div>
       <div class="grid-2">
         <div class="field"><label>Texto-base (referência)</label><input name="textoBaseRef" required value="${esc(m.textoBaseRef)}" placeholder="Ex.: Lucas 15:11-24" /></div>
-        <div class="field"><label>Versão</label><input name="versaoBiblia" value="${esc(m.versaoBiblia || "NVI")}" /></div>
+        <div class="field"><label>Versão</label><input name="versaoBiblia" value="${esc(m.versaoBiblia || "ONBV")}" /></div>
       </div>
       <div class="field"><label>Citação do texto-base</label><textarea name="textoBaseCitacao" rows="4" placeholder="Cole o texto bíblico">${esc(m.textoBaseCitacao)}</textarea></div>
       <div class="field"><label>Notas para a próxima análise</label><textarea name="notas" rows="2" placeholder="O que enfatizar nesta etapa">${esc(m.notas)}</textarea></div>
@@ -372,6 +462,7 @@ function viewNova(root) {
     e.preventDefault();
     const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
+    state.pendingAnchor = null;
     if (edit) {
       Object.assign(edit, data, { updatedAt: new Date().toISOString(), status: edit.status === "rascunho" ? "em estudo" : edit.status });
       state.editingId = edit.id;
@@ -397,6 +488,7 @@ function viewEstudo(root) {
     return;
   }
   if (!Array.isArray(m.analises)) m.analises = [];
+  if (!Array.isArray(m.mapaImagens)) m.mapaImagens = [];
   const step = STEPS[m.stepIndex] || STEPS[0];
   const p = progress(m);
   const prompt = promptAnalise({ mensagem: m, etapa: step.id, pedido: m.notas || "" });
@@ -406,14 +498,13 @@ function viewEstudo(root) {
       <p class="muted">${frenteLabel(m.frente)} · ${esc(m.textoBaseRef || "sem texto")}</p>
       <h1>${esc(m.tema || "Mensagem")}</h1>
     </div>
-
     <div class="filter-bar no-print">
       <select id="sel-msg" style="flex:1;min-width:12rem">
         ${list.map((x) => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.tema || x.id)}</option>`).join("")}
       </select>
+      <button type="button" class="btn btn-ghost btn-sm" data-go="foco">Foco</button>
       <span class="badge badge-accent">${p.done}/${p.total}</span>
     </div>
-
     <div class="card topic-board no-print">
       <div class="card-title"><div><h2>Tópicos</h2><p>Toque em um · trabalhe só ele</p></div></div>
       <div class="topic-grid">
@@ -428,11 +519,9 @@ function viewEstudo(root) {
         }).join("")}
       </div>
     </div>
-
     <div class="aviso ok no-print" style="margin-top:1rem">
       <strong>Agora:</strong>&nbsp;${esc(step.action)}
     </div>
-
     <form id="form-step" class="card step-panel" style="margin-top:0.75rem">
       <div class="card-title">
         <div>
@@ -448,7 +537,6 @@ function viewEstudo(root) {
         <button type="button" class="btn btn-secondary" id="btn-next" ${m.stepIndex >= STEPS.length - 1 ? "disabled" : ""}>Próximo</button>
       </div>
     </form>
-
     <details class="card" style="margin-top:1rem">
       <summary class="card-title" style="cursor:pointer;list-style:none;margin:0">
         <div><h2>Prompt desta análise</h2><p>Copie para pedir no chat · só este tópico</p></div>
@@ -459,32 +547,26 @@ function viewEstudo(root) {
         <button type="button" class="btn btn-primary btn-sm" id="btn-log-analise">Registrar análise</button>
       </div>
     </details>
-
     <div class="card" style="margin-top:1rem">
       <div class="card-title"><div><h2>Visão por tópicos</h2><p>Resumo objetivo do que já está pronto</p></div></div>
       ${renderReadout(m)}
     </div>
-
     ${
       m.analises.length
         ? `<div class="card" style="margin-top:1rem">
-            <div class="card-title"><div><h2>Histórico de análises</h2><p>Uma entrada por pedido</p></div></div>
+            <div class="card-title"><div><h2>Histórico de análises</h2></div></div>
             <ul class="analise-list">
               ${[...m.analises]
                 .reverse()
                 .slice(0, 8)
-                .map(
-                  (a) =>
-                    `<li><strong>${esc(a.topico)}</strong> · ${esc(a.data)}<br/><span class="muted">${esc(a.nota || "sem nota")}</span></li>`,
-                )
+                .map((a) => `<li><strong>${esc(a.topico)}</strong> · ${esc(a.data)}<br/><span class="muted">${esc(a.nota || "sem nota")}</span></li>`)
                 .join("")}
             </ul>
           </div>`
         : ""
     }
-
     <div class="btn-row no-print" style="margin-top:1rem">
-      <button type="button" class="btn btn-secondary btn-sm" data-go="nova">Âncora</button>
+      <button type="button" class="btn btn-secondary btn-sm" data-go="foco">Foco</button>
       <button type="button" class="btn btn-secondary btn-sm" data-go="mapa">Mapa</button>
       <button type="button" class="btn btn-primary btn-sm" id="btn-pronto">Pronto</button>
       <button type="button" class="btn btn-secondary btn-sm" id="btn-pub">${m.publicado ? "Despublicar" : "Publicar"}</button>
@@ -563,23 +645,15 @@ function renderStepFields(m, stepId) {
       return i("tema", "Tema", m.tema, "Ex.: O Pai que corre") + i("ideiaCentral", "Ideia central (1 frase)", m.ideiaCentral, "A frase que carrega tudo");
     case "versiculos":
       return (
-        `<div class="grid-2">${i("textoBaseRef", "Referência", m.textoBaseRef, "Lucas 15:20")}${i("versaoBiblia", "Versão", m.versaoBiblia, "NVI")}</div>` +
+        `<div class="grid-2">${i("textoBaseRef", "Referência", m.textoBaseRef, "Lucas 15:20")}${i("versaoBiblia", "Versão", m.versaoBiblia, "ONBV")}</div>` +
         t("textoBaseCitacao", "Citação", m.textoBaseCitacao, 4)
       );
     case "conexoes":
       return t("conexoes", "Textos ligados (1 por linha)", m.conexoes, 5);
     case "cenario_biblico":
-      return (
-        t("bib_antes", "Antes", m.cenarioBiblico?.antes, 2) +
-        t("bib_durante", "No ponto", m.cenarioBiblico?.durante, 2) +
-        t("bib_depois", "Depois", m.cenarioBiblico?.depois, 2)
-      );
+      return t("bib_antes", "Antes", m.cenarioBiblico?.antes, 2) + t("bib_durante", "No ponto", m.cenarioBiblico?.durante, 2) + t("bib_depois", "Depois", m.cenarioBiblico?.depois, 2);
     case "cenario_vida":
-      return (
-        t("vida_anterior", "Anterior", m.cenarioVida?.anterior, 2) +
-        t("vida_atual", "Atual", m.cenarioVida?.atual, 2) +
-        t("vida_futuro", "Futuro", m.cenarioVida?.futuro, 2)
-      );
+      return t("vida_anterior", "Anterior", m.cenarioVida?.anterior, 2) + t("vida_atual", "Atual", m.cenarioVida?.atual, 2) + t("vida_futuro", "Futuro", m.cenarioVida?.futuro, 2);
     case "raciocinio":
       return t("abertura", "Abertura", m.abertura, 2) + t("raciocinio", "Pontos numerados", m.raciocinio, 6);
     case "frases":
@@ -587,9 +661,10 @@ function renderStepFields(m, stepId) {
     case "resumo_curto":
       return t("resumoCurto", "3–5 tópicos", m.resumoCurto, 4);
     case "mapa":
-      return `<p class="hint" style="margin-top:0">Confira o mapa. Se a linha estiver clara, salve.</p>
+      return `<p class="hint" style="margin-top:0">Confira o mapa e as imagens. Se a linha estiver clara, salve.</p>
         <input type="hidden" name="mapa_ok" value="1" />
-        ${renderMindmapHtml(m)}`;
+        ${renderMindmapHtml(m)}
+        ${renderMapaImagens(m)}`;
     case "chamada":
       return t("chamada", "Decisão", m.chamada, 2) + t("oracao", "Oração", m.oracao, 2) + t("checklist", "Tempo", m.checklist, 2);
     default:
@@ -741,6 +816,26 @@ function renderMindmapHtml(m) {
     </div>`;
 }
 
+function renderMapaImagens(m) {
+  const imgs = m.mapaImagens || [];
+  if (!imgs.length) return "";
+  return `
+    <div class="card" style="margin-top:1rem">
+      <div class="card-title"><div><h2>História visual</h2><p>Imagens do mapa mental</p></div></div>
+      <div class="mapa-gallery">
+        ${imgs
+          .map(
+            (img) => `
+          <figure class="mapa-fig">
+            <img src="${esc(img.arquivo)}" alt="${esc(img.titulo || "")}" loading="lazy" />
+            <figcaption><strong>${esc(img.titulo || "")}</strong>${img.legenda ? `<span>${esc(img.legenda)}</span>` : ""}</figcaption>
+          </figure>`,
+          )
+          .join("")}
+      </div>
+    </div>`;
+}
+
 function viewMapa(root) {
   const list = state.store.messages;
   if (!state.editingId && list[0]) state.editingId = list[0].id;
@@ -753,9 +848,11 @@ function viewMapa(root) {
     <div class="page-head"><p class="muted">Gravar a linha · ${frenteLabel(m.frente)}</p><h1>Mapa mental</h1></div>
     <div class="filter-bar no-print">
       <select id="sel-msg" style="flex:1">${list.map((x) => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.tema || x.id)}</option>`).join("")}</select>
+      <button type="button" class="btn btn-secondary btn-sm" data-go="foco">Foco</button>
       <button type="button" class="btn btn-secondary btn-sm" id="btn-print">Imprimir / PDF</button>
     </div>
     <div class="card">${renderMindmapHtml(m)}</div>
+    ${renderMapaImagens(m)}
     <div class="card" style="margin-top:1rem">
       <div class="card-title"><div><h2>Resumo curto</h2><p>Para oportunidades rápidas</p></div></div>
       <p class="prose-line">${esc(m.resumoCurto || "Preencha a etapa Resumo curto no Estudo.")}</p>
@@ -765,80 +862,419 @@ function viewMapa(root) {
     state.editingId = e.target.value;
     render();
   });
+  $$("[data-go]", root).forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
   $("#btn-print").addEventListener("click", () => window.print());
 }
 
-function viewTranscricoes(root) {
-  const list = state.store.transcriptions;
-  const edit = list.find((t) => t.id === state.editingId && state.editingType === "tr") || emptyTranscription();
+async function ensureBibleMeta() {
+  const b = state.bible;
+  if (!b.translations.length) {
+    b.translations = await Bible.listTranslations();
+    b.languages = await Bible.listLanguages();
+  }
+  if (!b.books.length) {
+    b.books = await Bible.getBooks(b.prefs.enId);
+  }
+  if (!b.plans.length) {
+    try {
+      const res = await fetch("data/reading-plans.json");
+      b.plans = await res.json();
+    } catch {
+      b.plans = [];
+    }
+  }
+}
+
+async function loadBibleChapter() {
+  const b = state.bible;
+  b.loading = true;
+  b.error = "";
+  b.lesson = null;
+  try {
+    await ensureBibleMeta();
+    const [en, pt] = await Promise.all([
+      Bible.getChapter(b.prefs.enId, b.book, b.chapter),
+      Bible.getChapter(b.prefs.ptId, b.book, b.chapter),
+    ]);
+    b.enChapter = en;
+    b.ptChapter = pt;
+    const bookName = Bible.bookLabel(b.books, b.book);
+    Bible.savePosition({ book: b.book, chapter: b.chapter, bookLabel: bookName });
+    const maxCh = b.books.find((x) => x.id === b.book)?.chapters || b.chapter;
+    if (b.chapter < maxCh) {
+      Bible.prefetchChapter(b.prefs.enId, b.book, b.chapter + 1);
+      Bible.prefetchChapter(b.prefs.ptId, b.book, b.chapter + 1);
+    }
+  } catch (err) {
+    b.error = err?.message || "Não foi possível carregar o capítulo.";
+    b.enChapter = null;
+    b.ptChapter = null;
+  } finally {
+    b.loading = false;
+  }
+}
+
+function viewBiblia(root) {
+  root.innerHTML = `<div class="page-head"><p class="muted">Leitura · estudo</p><h1>Bíblia</h1></div>
+    <div class="card empty">Carregando versões gratuitas…</div>`;
+  ensureBibleMeta()
+    .then(() => loadBibleChapter())
+    .then(() => paintBiblia(root))
+    .catch((err) => {
+      root.innerHTML = `<div class="page-head"><h1>Bíblia</h1></div><div class="aviso danger">${esc(err.message || "Erro")}</div>`;
+    });
+}
+
+function paintBiblia(root) {
+  const b = state.bible;
+  const prefs = b.prefs;
+  const langs = b.languages;
+  const enLang = b.translations.find((t) => t.id === prefs.enId)?.language || "eng";
+  const ptLang = b.translations.find((t) => t.id === prefs.ptId)?.language || "por";
+  const enVersions = Bible.translationsForLanguage(b.translations, enLang);
+  const ptVersions = Bible.translationsForLanguage(b.translations, ptLang);
+  const book = b.books.find((x) => x.id === b.book);
+  const maxCh = book?.chapters || 1;
+  const planProg = Bible.loadPlanProgress();
+  const activePlan = b.plans.find((p) => p.id === (planProg.planId || b.planId)) || b.plans[0];
+  const dayDone = new Set(planProg.doneDays?.[activePlan?.id] || []);
+  const nextDay = activePlan?.dias.find((d) => !dayDone.has(d.dia)) || activePlan?.dias[0];
+  const favs = Bible.loadFavorites();
+
+  const enMap = new Map((b.enChapter?.verses || []).map((v) => [v.number, v]));
+  const ptMap = new Map((b.ptChapter?.verses || []).map((v) => [v.number, v]));
+  const nums = [...new Set([...enMap.keys(), ...ptMap.keys()])].sort((a, c) => a - c);
+
   root.innerHTML = `
-    <div class="page-head"><p class="muted">Base de frases e histórias</p><h1>Transcrições</h1></div>
-    <form id="form-tr" class="card">
-      <div class="card-title"><div><h2>${edit.id ? "Editar" : "Nova"} transcrição</h2><p>Cole o texto e destaque frases</p></div></div>
+    <div class="page-head">
+      <p class="muted">Versões livres · cache local</p>
+      <h1>Bíblia</h1>
+    </div>
+    <div class="bible-tabs no-print">
+      <button type="button" class="${b.tab === "ler" ? "active" : ""}" data-tab="ler">Ler</button>
+      <button type="button" class="${b.tab === "plano" ? "active" : ""}" data-tab="plano">Plano</button>
+      <button type="button" class="${b.tab === "favs" ? "active" : ""}" data-tab="favs">Favoritos</button>
+    </div>
+    ${
+      b.tab === "plano"
+        ? renderBiblePlan(activePlan, dayDone, nextDay)
+        : b.tab === "favs"
+          ? renderBibleFavs(favs)
+          : `
+    <div class="aviso ok no-print" style="font-size:0.8rem">
+      Defaults: <strong>BSB</strong> (EN contemporâneo) + <strong>Open Nova Bíblia Viva</strong> (PT). Troque idioma/versão abaixo. Textos NVT/NVI não estão disponíveis sem licença.
+    </div>
+    <div class="bible-controls card no-print">
       <div class="grid-2">
-        <div class="field"><label>Título</label><input name="titulo" required value="${esc(edit.titulo)}" /></div>
-        <div class="field"><label>Fonte / pastor</label><input name="fonte" value="${esc(edit.fonte)}" /></div>
+        <div class="field">
+          <label>Idioma EN</label>
+          <select id="lang-en">${langs.map((l) => `<option value="${l.code}" ${l.code === enLang ? "selected" : ""}>${esc(l.name)} (${l.count})</option>`).join("")}</select>
+        </div>
+        <div class="field">
+          <label>Versão EN</label>
+          <select id="ver-en">${enVersions.map((t) => `<option value="${t.id}" ${t.id === prefs.enId ? "selected" : ""}>${esc(t.shortName)} — ${esc(t.name)}</option>`).join("")}</select>
+        </div>
+        <div class="field">
+          <label>Idioma PT / 2ª</label>
+          <select id="lang-pt">${langs.map((l) => `<option value="${l.code}" ${l.code === ptLang ? "selected" : ""}>${esc(l.name)} (${l.count})</option>`).join("")}</select>
+        </div>
+        <div class="field">
+          <label>Versão PT / 2ª</label>
+          <select id="ver-pt">${ptVersions.map((t) => `<option value="${t.id}" ${t.id === prefs.ptId ? "selected" : ""}>${esc(t.shortName)} — ${esc(t.name)}</option>`).join("")}</select>
+        </div>
       </div>
-      <div class="grid-2">
-        <div class="field"><label>Data</label><input name="data" type="date" value="${esc(edit.data)}" /></div>
-        <div class="field"><label>Tags</label><input name="tags" value="${esc(edit.tags)}" placeholder="perdão, família" /></div>
+      <div class="filter-bar" style="margin:0.75rem 0 0">
+        <select id="sel-book" style="flex:2">${b.books.map((bk) => `<option value="${bk.id}" ${bk.id === b.book ? "selected" : ""}>${esc(bk.name)}</option>`).join("")}</select>
+        <select id="sel-ch">${Array.from({ length: maxCh }, (_, i) => i + 1).map((n) => `<option value="${n}" ${n === b.chapter ? "selected" : ""}>${n}</option>`).join("")}</select>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-prev-ch">←</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-next-ch">→</button>
       </div>
-      <div class="field"><label>Texto completo</label><textarea name="texto" rows="5">${esc(edit.texto)}</textarea></div>
-      <div class="field"><label>Frases de efeito</label><textarea name="frases" rows="2">${esc(edit.frases)}</textarea></div>
-      <div class="field"><label>Histórias</label><textarea name="historias" rows="2">${esc(edit.historias)}</textarea></div>
-      <div class="field"><label>Textos citados</label><textarea name="textosCitados" rows="2">${esc(edit.textosCitados)}</textarea></div>
-      <div class="btn-row">
-        <button type="submit" class="btn btn-primary">Salvar</button>
-        ${edit.id ? `<button type="button" class="btn btn-ghost" id="btn-new-tr">Limpar</button>` : ""}
-      </div>
-    </form>
-    <div class="list" style="margin-top:1rem">
+    </div>
+    ${b.loading ? `<div class="card empty">Carregando capítulo…</div>` : ""}
+    ${b.error ? `<div class="aviso danger">${esc(b.error)}</div>` : ""}
+    <div class="bible-verses">
       ${
-        list.length
-          ? list
-              .map(
-                (t) => `
-        <button type="button" class="card list-item" data-tr="${t.id}">
-          <h3>${esc(t.titulo)}</h3>
-          <p>${esc(t.fonte || "Sem fonte")} · ${esc(t.tags || "")}</p>
-        </button>`,
-              )
+        nums.length
+          ? nums
+              .map((n) => {
+                const en = enMap.get(n);
+                const pt = ptMap.get(n);
+                const fav = Bible.isFavorite(b.book, b.chapter, n);
+                const head = en?.heading || pt?.heading;
+                return `
+                ${head ? `<h3 class="bible-heading">${esc(head)}</h3>` : ""}
+                <article class="bible-verse card" data-verse="${n}">
+                  <div class="bible-verse-num">${n}</div>
+                  <div class="bible-verse-body">
+                    ${en ? `<p class="bible-en" data-lesson="${n}"><span class="badge badge-accent">EN</span> ${esc(en.text)}</p>` : ""}
+                    ${pt ? `<p class="bible-pt"><span class="badge">PT</span> ${esc(pt.text)}</p>` : ""}
+                    <div class="bible-actions no-print">
+                      <button type="button" class="btn btn-ghost btn-sm" data-copy="${n}">Copiar</button>
+                      <button type="button" class="btn btn-ghost btn-sm" data-fav="${n}">${fav ? "★ Favorito" : "☆ Favoritar"}</button>
+                      <button type="button" class="btn btn-ghost btn-sm" data-anchor="${n}">Usar na âncora</button>
+                      ${en ? `<button type="button" class="btn btn-primary btn-sm" data-lesson="${n}">Mini-aula EN</button>` : ""}
+                    </div>
+                  </div>
+                </article>`;
+              })
               .join("")
-          : `<div class="card empty">Nenhuma transcrição ainda.</div>`
+          : !b.loading
+            ? `<div class="card empty">Nenhum versículo neste capítulo.</div>`
+            : ""
       }
     </div>
-  `;
-  $("#form-tr").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    if (edit.id) {
-      Object.assign(edit, data, { updatedAt: new Date().toISOString() });
-    } else {
-      state.store.transcriptions.unshift({ ...emptyTranscription(), ...data, id: uid("tr") });
+    <div id="lesson-panel" class="${b.lesson ? "" : "hidden"}">${b.lesson ? renderLesson(b.lesson) : ""}</div>
+    `
     }
-    state.editingType = "message";
-    state.editingId = getEditingMessage()?.id || null;
-    persist();
-    render();
-  });
-  $$("[data-tr]", root).forEach((b) =>
-    b.addEventListener("click", () => {
-      state.editingType = "tr";
-      state.editingId = b.dataset.tr;
-      render();
+  `;
+
+  $$("[data-tab]", root).forEach((btn) =>
+    btn.addEventListener("click", () => {
+      b.tab = btn.dataset.tab;
+      paintBiblia(root);
     }),
   );
-  $("#btn-new-tr")?.addEventListener("click", () => {
-    state.editingType = "message";
-    render();
+
+  if (b.tab === "plano") {
+    $("#sel-plan")?.addEventListener("change", (e) => {
+      const prog = Bible.loadPlanProgress();
+      prog.planId = e.target.value;
+      Bible.savePlanProgress(prog);
+      b.planId = e.target.value;
+      paintBiblia(root);
+    });
+    $$("[data-plan-go]", root).forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        b.book = btn.dataset.book;
+        b.chapter = Number(btn.dataset.chapter);
+        b.tab = "ler";
+        await loadBibleChapter();
+        paintBiblia(root);
+      }),
+    );
+    $$("[data-plan-done]", root).forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const planId = btn.dataset.plan;
+        const dia = Number(btn.dataset.dia);
+        const prog = Bible.loadPlanProgress();
+        if (!prog.doneDays) prog.doneDays = {};
+        if (!prog.doneDays[planId]) prog.doneDays[planId] = [];
+        const set = new Set(prog.doneDays[planId]);
+        if (set.has(dia)) set.delete(dia);
+        else set.add(dia);
+        prog.doneDays[planId] = [...set];
+        prog.planId = planId;
+        Bible.savePlanProgress(prog);
+        paintBiblia(root);
+      }),
+    );
+    return;
+  }
+
+  if (b.tab === "favs") {
+    $$("[data-fav-go]", root).forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        b.book = btn.dataset.book;
+        b.chapter = Number(btn.dataset.chapter);
+        b.tab = "ler";
+        await loadBibleChapter();
+        paintBiblia(root);
+      }),
+    );
+    return;
+  }
+
+  const reload = async () => {
+    await loadBibleChapter();
+    paintBiblia(root);
+  };
+
+  $("#lang-en")?.addEventListener("change", (e) => {
+    const list = Bible.translationsForLanguage(b.translations, e.target.value);
+    if (list[0]) prefs.enId = list[0].id;
+    Bible.savePrefs(prefs);
+    $("#ver-en").innerHTML = list.map((t) => `<option value="${t.id}">${esc(t.shortName)} — ${esc(t.name)}</option>`).join("");
   });
+  $("#lang-pt")?.addEventListener("change", (e) => {
+    const list = Bible.translationsForLanguage(b.translations, e.target.value);
+    if (list[0]) prefs.ptId = list[0].id;
+    Bible.savePrefs(prefs);
+    $("#ver-pt").innerHTML = list.map((t) => `<option value="${t.id}">${esc(t.shortName)} — ${esc(t.name)}</option>`).join("");
+  });
+  $("#ver-en")?.addEventListener("change", async (e) => {
+    prefs.enId = e.target.value;
+    Bible.savePrefs(prefs);
+    b.books = await Bible.getBooks(prefs.enId);
+    if (!b.books.find((x) => x.id === b.book)) {
+      b.book = b.books[0]?.id || "JHN";
+      b.chapter = 1;
+    }
+    await reload();
+  });
+  $("#ver-pt")?.addEventListener("change", async (e) => {
+    prefs.ptId = e.target.value;
+    Bible.savePrefs(prefs);
+    await reload();
+  });
+  $("#sel-book")?.addEventListener("change", async (e) => {
+    b.book = e.target.value;
+    b.chapter = 1;
+    await reload();
+  });
+  $("#sel-ch")?.addEventListener("change", async (e) => {
+    b.chapter = Number(e.target.value);
+    await reload();
+  });
+  $("#btn-prev-ch")?.addEventListener("click", async () => {
+    if (b.chapter > 1) b.chapter -= 1;
+    else {
+      const idx = b.books.findIndex((x) => x.id === b.book);
+      if (idx > 0) {
+        b.book = b.books[idx - 1].id;
+        b.chapter = b.books[idx - 1].chapters;
+      }
+    }
+    await reload();
+  });
+  $("#btn-next-ch")?.addEventListener("click", async () => {
+    if (b.chapter < maxCh) b.chapter += 1;
+    else {
+      const idx = b.books.findIndex((x) => x.id === b.book);
+      if (idx < b.books.length - 1) {
+        b.book = b.books[idx + 1].id;
+        b.chapter = 1;
+      }
+    }
+    await reload();
+  });
+
+  const verseBundle = (n) => {
+    const en = enMap.get(n);
+    const pt = ptMap.get(n);
+    const ref = `${Bible.bookLabel(b.books, b.book)} ${b.chapter}:${n}`;
+    return { n, en, pt, ref };
+  };
+
+  $$("[data-copy]", root).forEach((btn) =>
+    btn.addEventListener("click", async () => {
+      const { en, pt, ref } = verseBundle(Number(btn.dataset.copy));
+      const text = `${ref}\nEN: ${en?.text || ""}\nPT: ${pt?.text || ""}`.trim();
+      await navigator.clipboard.writeText(text);
+      btn.textContent = "Copiado";
+      setTimeout(() => (btn.textContent = "Copiar"), 1000);
+    }),
+  );
+  $$("[data-fav]", root).forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const { en, pt, ref, n } = verseBundle(Number(btn.dataset.fav));
+      Bible.toggleFavorite({ book: b.book, chapter: b.chapter, verse: n, ref, en: en?.text || "", pt: pt?.text || "" });
+      paintBiblia(root);
+    }),
+  );
+  $$("[data-anchor]", root).forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const { en, pt, ref } = verseBundle(Number(btn.dataset.anchor));
+      state.pendingAnchor = { ref, en: en?.text || "", pt: pt?.text || "", versao: "ONBV" };
+      state.editingId = null;
+      go("nova");
+    }),
+  );
+  $$("[data-lesson]", root).forEach((btn) => {
+    if (btn.tagName === "P") {
+      btn.addEventListener("click", () => openLesson(Number(btn.dataset.lesson), root));
+    } else {
+      btn.addEventListener("click", () => openLesson(Number(btn.dataset.lesson), root));
+    }
+  });
+}
+
+function openLesson(n, root) {
+  const b = state.bible;
+  const en = b.enChapter?.verses?.find((v) => v.number === n);
+  if (!en) return;
+  const ref = `${Bible.bookLabel(b.books, b.book)} ${b.chapter}:${n}`;
+  b.lesson = Bible.buildMiniLesson(en.text, ref);
+  const panel = $("#lesson-panel");
+  if (panel) {
+    panel.classList.remove("hidden");
+    panel.innerHTML = renderLesson(b.lesson);
+    $("#btn-close-lesson")?.addEventListener("click", () => {
+      b.lesson = null;
+      panel.classList.add("hidden");
+      panel.innerHTML = "";
+    });
+  }
+}
+
+function renderLesson(lesson) {
+  return `
+    <div class="card lesson-card">
+      <div class="card-title">
+        <div><h2>Mini-aula de inglês</h2><p>${esc(lesson.ref)}</p></div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-close-lesson">Fechar</button>
+      </div>
+      <p class="bible-en" style="margin:0 0 0.75rem">${esc(lesson.model)}</p>
+      <ul class="lesson-words">
+        ${lesson.words.map((w) => `<li><strong>${esc(w.en)}</strong> — ${esc(w.pt)}</li>`).join("")}
+      </ul>
+      <p class="muted" style="margin:0.75rem 0 0;font-size:0.85rem"><strong>Prática:</strong> ${esc(lesson.tip)}</p>
+    </div>`;
+}
+
+function renderBiblePlan(plan, dayDone, nextDay) {
+  const b = state.bible;
+  if (!plan) return `<div class="card empty">Nenhum plano disponível.</div>`;
+  const doneCount = dayDone.size;
+  return `
+    <div class="card" style="margin-bottom:1rem">
+      <div class="field"><label>Plano ativo</label>
+        <select id="sel-plan">${b.plans.map((p) => `<option value="${p.id}" ${p.id === plan.id ? "selected" : ""}>${esc(p.nome)}</option>`).join("")}</select>
+      </div>
+      <p class="muted" style="margin:0.5rem 0 0">${esc(plan.descricao)} · ${doneCount}/${plan.dias.length} dias</p>
+      ${
+        nextDay
+          ? `<button type="button" class="btn btn-primary" style="margin-top:0.75rem" data-plan-go data-book="${nextDay.book}" data-chapter="${nextDay.chapter}">Continuar · dia ${nextDay.dia}</button>`
+          : `<p class="aviso ok" style="margin-top:0.75rem">Plano concluído. Parabéns!</p>`
+      }
+    </div>
+    <div class="list">
+      ${plan.dias
+        .map((d) => {
+          const ok = dayDone.has(d.dia);
+          return `<div class="card list-item" style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center">
+            <div>
+              <strong>Dia ${d.dia}</strong>
+              <p class="muted" style="margin:0.2rem 0 0">${d.book} ${d.chapter}</p>
+            </div>
+            <div class="btn-row">
+              <button type="button" class="btn btn-secondary btn-sm" data-plan-go data-book="${d.book}" data-chapter="${d.chapter}">Ler</button>
+              <button type="button" class="btn ${ok ? "btn-primary" : "btn-ghost"} btn-sm" data-plan-done data-plan="${plan.id}" data-dia="${d.dia}">${ok ? "✓" : "Marcar"}</button>
+            </div>
+          </div>`;
+        })
+        .join("")}
+    </div>`;
+}
+
+function renderBibleFavs(favs) {
+  if (!favs.length) return `<div class="card empty">Nenhum favorito ainda. Toque em ☆ num versículo.</div>`;
+  return `<div class="list">${favs
+    .map(
+      (f) => `
+    <button type="button" class="card list-item" data-fav-go data-book="${esc(f.book)}" data-chapter="${f.chapter}" style="width:100%;text-align:left">
+      <h3>${esc(f.ref || `${f.book} ${f.chapter}:${f.verse}`)}</h3>
+      <p>${esc(f.en || f.pt || "")}</p>
+    </button>`,
+    )
+    .join("")}</div>`;
 }
 
 function viewEbd(root) {
   const list = state.store.ebd;
   const edit = list.find((t) => t.id === state.editingId && state.editingType === "ebd") || emptyEbd();
   root.innerHTML = `
-    <div class="page-head"><p class="muted">Plano de aula por lição</p><h1>EBD</h1></div>
+    <div class="page-head"><p class="muted">Aula · didática · separado da ministração</p><h1>EBD</h1></div>
+    <div class="aviso ok no-print">Monte a aula aqui (objetivos, dinâmica, perguntas, atividade). Só marque <strong>Publicar</strong> quando estiver pronta. Não misture com checklist de culto.</div>
     <form id="form-ebd" class="card">
       <div class="grid-2">
         <div class="field"><label>Série</label><input name="serie" value="${esc(edit.serie)}" /></div>
@@ -846,19 +1282,20 @@ function viewEbd(root) {
       </div>
       <div class="grid-2">
         <div class="field"><label>Data</label><input name="data" type="date" value="${esc(edit.data)}" /></div>
-        <div class="field"><label>Faixa etária</label><input name="faixa" value="${esc(edit.faixa)}" /></div>
+        <div class="field"><label>Faixa etária</label><input name="faixa" value="${esc(edit.faixa)}" placeholder="Adultos / Jovens / Kids" /></div>
       </div>
-      <div class="field"><label>Objetivos</label><textarea name="objetivos" rows="2">${esc(edit.objetivos)}</textarea></div>
-      <div class="field"><label>Abertura</label><textarea name="abertura" rows="2">${esc(edit.abertura)}</textarea></div>
-      <div class="field"><label>Leitura</label><textarea name="leitura" rows="2">${esc(edit.leitura)}</textarea></div>
-      <div class="field"><label>Explicação</label><textarea name="explicacao" rows="3">${esc(edit.explicacao)}</textarea></div>
+      <div class="field"><label>Objetivos de aprendizagem</label><textarea name="objetivos" rows="2" placeholder="O que o aluno deve compreender e aplicar">${esc(edit.objetivos)}</textarea></div>
+      <div class="field"><label>Abertura / quebra-gelo</label><textarea name="abertura" rows="2">${esc(edit.abertura)}</textarea></div>
+      <div class="field"><label>Leitura bíblica</label><textarea name="leitura" rows="2">${esc(edit.leitura)}</textarea></div>
+      <div class="field"><label>Explicação (didática)</label><textarea name="explicacao" rows="3">${esc(edit.explicacao)}</textarea></div>
+      <div class="field"><label>Dinâmica</label><textarea name="dinamica" rows="2" placeholder="Atividade em grupo / dramatização">${esc(edit.dinamica || "")}</textarea></div>
       <div class="field"><label>Perguntas</label><textarea name="perguntas" rows="2">${esc(edit.perguntas)}</textarea></div>
       <div class="field"><label>Aplicação</label><textarea name="aplicacao" rows="2">${esc(edit.aplicacao)}</textarea></div>
       <div class="field"><label>Atividade</label><textarea name="atividade" rows="2">${esc(edit.atividade)}</textarea></div>
       <div class="field"><label>Conclusão</label><textarea name="conclusao" rows="2">${esc(edit.conclusao)}</textarea></div>
       <div class="field"><label>Recursos</label><textarea name="recursos" rows="2">${esc(edit.recursos)}</textarea></div>
       <label class="field" style="display:flex;align-items:center;gap:0.5rem">
-        <input type="checkbox" name="publicado" ${edit.publicado ? "checked" : ""} /> Publicar aula
+        <input type="checkbox" name="publicado" ${edit.publicado ? "checked" : ""} /> Publicar aula (só o montado)
       </label>
       <button type="submit" class="btn btn-primary">Salvar aula</button>
     </form>
@@ -870,7 +1307,7 @@ function viewEbd(root) {
                 (a) => `
         <button type="button" class="card list-item" data-ebd="${a.id}">
           <h3>${esc(a.licao)}</h3>
-          <p>${esc(a.serie || "")} · ${esc(a.data || "")} ${a.publicado ? "· publicado" : ""}</p>
+          <p>${esc(a.serie || "")} · ${esc(a.data || "")} ${a.publicado ? "· publicado" : "· rascunho"}</p>
         </button>`,
               )
               .join("")
@@ -883,6 +1320,7 @@ function viewEbd(root) {
     const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
     data.publicado = fd.get("publicado") === "on";
+    data.status = data.publicado ? "pronto" : "rascunho";
     if (edit.id) Object.assign(edit, data, { updatedAt: new Date().toISOString() });
     else state.store.ebd.unshift({ ...emptyEbd(), ...data, id: uid("ebd") });
     state.editingType = "message";
@@ -902,12 +1340,8 @@ function viewPublicados(root) {
   const msgs = state.store.messages.filter((m) => m.publicado);
   const aulas = state.store.ebd.filter((a) => a.publicado);
   root.innerHTML = `
-    <div class="page-head"><p class="muted">Acervo</p><h1>Prontos</h1></div>
-    ${
-      !msgs.length && !aulas.length
-        ? `<div class="card empty">Nada publicado ainda. No Estudo, use Publicar quando estiver pronto.</div>`
-        : ""
-    }
+    <div class="page-head"><p class="muted">Só o montado</p><h1>Prontos</h1></div>
+    ${!msgs.length && !aulas.length ? `<div class="card empty">Nada publicado ainda. No Estudo ou na EBD, use Publicar quando estiver pronto.</div>` : ""}
     <div class="list">
       ${msgs
         .map(
@@ -918,6 +1352,7 @@ function viewPublicados(root) {
           <p class="muted" style="margin:0;font-size:0.85rem">${esc(m.ideiaCentral)}</p>
           <div style="margin-top:0.75rem">${renderReadout(m)}</div>
           <div style="margin-top:1rem">${renderMindmapHtml(m)}</div>
+          ${renderMapaImagens(m)}
         </article>`,
         )
         .join("")}
@@ -930,8 +1365,10 @@ function viewPublicados(root) {
           ${block("Objetivos", a.objetivos)}
           ${block("Leitura", a.leitura)}
           ${block("Explicação", a.explicacao)}
+          ${block("Dinâmica", a.dinamica)}
           ${block("Perguntas", a.perguntas)}
           ${block("Aplicação", a.aplicacao)}
+          ${block("Atividade", a.atividade)}
         </article>`,
         )
         .join("")}
@@ -941,9 +1378,9 @@ function viewPublicados(root) {
 
 function viewMais(root) {
   const items = [
-    { id: "mapa", label: "Mapa", desc: "Estrutura visual" },
-    { id: "transcricoes", label: "Vozes", desc: "Frases e histórias" },
-    { id: "ebd", label: "EBD", desc: "Plano de aula" },
+    { id: "ebd", label: "EBD", desc: "Plano de aula didático" },
+    { id: "mapa", label: "Mapa", desc: "Estrutura visual + imagens" },
+    { id: "estudo", label: "Linha", desc: "Tópicos 1–10" },
     { id: "publicados", label: "Prontos", desc: "Acervo publicado" },
     { id: "config", label: "Ajustes", desc: "Backup e tema" },
   ];
@@ -974,6 +1411,10 @@ function viewConfig(root) {
         </div>
       </div>
       <div class="card">
+        <div class="card-title"><div><h2>Bíblia</h2><p>Versões livres com cache · sem custo</p></div></div>
+        <p class="muted" style="margin:0;font-size:0.85rem">EN padrão: BSB · PT padrão: Open Nova Bíblia Viva. Troque na aba Bíblia. NVT/NVI exigem licença (não inclusos).</p>
+      </div>
+      <div class="card">
         <div class="card-title"><div><h2>Exportar</h2><p>Backup do acervo</p></div></div>
         <div class="btn-row">
           <button type="button" class="btn btn-primary" id="btn-export-all">Pacote completo</button>
@@ -991,7 +1432,6 @@ function viewConfig(root) {
   $("#btn-export-all").addEventListener("click", () => {
     downloadJson("painel-data-pack.json", {
       messages: state.store.messages,
-      transcriptions: state.store.transcriptions,
       ebd: state.store.ebd,
       exportedAt: new Date().toISOString(),
     });
@@ -1005,7 +1445,6 @@ function viewConfig(root) {
       if (Array.isArray(json)) state.store.messages = json;
       else {
         if (json.messages) state.store.messages = json.messages;
-        if (json.transcriptions) state.store.transcriptions = json.transcriptions;
         if (json.ebd) state.store.ebd = json.ebd;
       }
       persist();
@@ -1017,6 +1456,5 @@ function viewConfig(root) {
   });
 }
 
-/* boot */
 bindAuth();
 bootAuth();

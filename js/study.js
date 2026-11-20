@@ -87,7 +87,7 @@ export function emptyMessage(frente = "igreja") {
     ideiaCentral: "",
     textoBaseRef: "",
     textoBaseCitacao: "",
-    versaoBiblia: "NVI",
+    versaoBiblia: "ONBV",
     tom: "pastoral",
     status: "rascunho",
     publicado: false,
@@ -102,7 +102,7 @@ export function emptyMessage(frente = "igreja") {
     chamada: "",
     oracao: "",
     checklist: "",
-    transcriptionIds: [],
+    mapaImagens: [],
     notas: "",
     analises: [],
     stepIndex: 0,
@@ -186,6 +186,7 @@ export function emptyEbd() {
     abertura: "",
     leitura: "",
     explicacao: "",
+    dinamica: "",
     perguntas: "",
     aplicacao: "",
     atividade: "",
@@ -194,21 +195,6 @@ export function emptyEbd() {
     messageId: null,
     status: "rascunho",
     publicado: false,
-    updatedAt: new Date().toISOString(),
-  };
-}
-
-export function emptyTranscription() {
-  return {
-    id: null,
-    titulo: "",
-    fonte: "",
-    data: "",
-    tags: "",
-    texto: "",
-    frases: "",
-    historias: "",
-    textosCitados: "",
     updatedAt: new Date().toISOString(),
   };
 }
@@ -223,7 +209,7 @@ export function promptAnalise({ mensagem, etapa, pedido = "" }) {
       `Frente: ${mensagem?.frente || "—"}`,
       `Tema: ${mensagem?.tema || "—"}`,
       `Ideia central: ${mensagem?.ideiaCentral || "—"}`,
-      `Texto-base: ${mensagem?.textoBaseRef || "—"} (${mensagem?.versaoBiblia || "NVI"})`,
+      `Texto-base: ${mensagem?.textoBaseRef || "—"} (${mensagem?.versaoBiblia || "ONBV"})`,
       `Tópico atual: ${step.title}`,
       `O que fazer neste tópico: ${step.action}`,
     ].join("\n"),
@@ -232,6 +218,7 @@ export function promptAnalise({ mensagem, etapa, pedido = "" }) {
       "Usar tópicos claros (bullets).",
       "Manter linguagem bíblica segura (referências corretas).",
       "Se faltar dado, pedir só o mínimo necessário.",
+      "Transcrições: usar só como input local no Cursor — não publicar na WEB.",
       pedido ? `Pedido desta análise: ${pedido}` : "Aprofundar este tópico com clareza e impacto.",
     ].join("\n"),
   };
