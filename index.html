@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071912" />
+  <meta name="description" content="Painel para montar e estudar mensagens bíblicas — Igreja, Empresa, Evangelismo e EBD." />
+  <title>Painel Ministração</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- AUTH -->
+  <div id="auth-screen" class="auth-shell hidden">
+    <aside class="auth-aside" aria-hidden="true">
+      <div class="blob-a"></div>
+      <div class="blob-b"></div>
+      <div class="logo">
+        <span class="logo-mark">PM</span>
+        <span>
+          <div class="logo-title">MINISTRAÇÃO</div>
+          <div class="logo-sub">Estudo &amp; mensagem</div>
+        </span>
+      </div>
+      <div class="auth-aside-inner">
+        <p class="auth-kicker">Igreja · Empresa · Evangelismo · EBD</p>
+        <h1>Estude por etapas. Pregue com clareza.</h1>
+        <p class="lead">Monte a âncora bíblica, conecte textos, guarde frases e use o mapa mental — depois publique só o que estiver pronto.</p>
+        <ul class="auth-features">
+          <li>
+            <span class="ico">1</span>
+            <div><strong>Quatro frentes</strong><p>Mesmo núcleo, formatos distintos por momento.</p></div>
+          </li>
+          <li>
+            <span class="ico">2</span>
+            <div><strong>Estudo etapa a etapa</strong><p>Tema, versículos, conexões, raciocínio e resumo curto.</p></div>
+          </li>
+          <li>
+            <span class="ico">3</span>
+            <div><strong>Mapa mental</strong><p>Grave a linha da mensagem sem perder o fio.</p></div>
+          </li>
+        </ul>
+      </div>
+      <p style="position:relative;font-size:0.75rem;color:rgb(255 255 255 / 0.5);margin:0">Acesso local protegido por senha gerada no primeiro uso.</p>
+    </aside>
+
+    <div class="auth-main">
+      <header class="auth-top no-print">
+        <div class="logo">
+          <span class="logo-mark">PM</span>
+          <span>
+            <div class="logo-title">MINISTRAÇÃO</div>
+            <div class="logo-sub">Estudo</div>
+          </span>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-tema-auth" aria-label="Alternar tema">Tema</button>
+      </header>
+
+      <main class="auth-body">
+        <div class="auth-card-wrap">
+          <div class="auth-mobile-lead">
+            <p class="auth-kicker" style="color:var(--accent)">Painel de ministração</p>
+            <p class="muted" style="margin:0.35rem 0 0;font-size:0.875rem">Estudo por etapas para Igreja, Empresa, Evangelismo e EBD.</p>
+          </div>
+
+          <!-- Setup -->
+          <div id="auth-setup" class="card hidden">
+            <h1 style="margin:0;font-size:1.5rem;font-weight:700">Criar acesso</h1>
+            <p class="muted" style="margin:0.4rem 0 1rem;font-size:0.875rem">Geramos uma senha forte. Guarde-a — ela não será mostrada de novo.</p>
+            <div id="generated-password" class="password-box" aria-live="polite"></div>
+            <div class="btn-row" style="margin-top:0.75rem">
+              <button type="button" class="btn btn-secondary" id="btn-copy-pass">Copiar</button>
+              <button type="button" class="btn btn-secondary" id="btn-regen-pass">Gerar outra</button>
+            </div>
+            <label class="field" style="margin-top:1rem">
+              <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--text)">
+                <input type="checkbox" id="confirm-saved" />
+                Guardei a senha em local seguro
+              </span>
+            </label>
+            <button type="button" class="btn btn-primary btn-block" id="btn-save-access" disabled>Ativar acesso</button>
+            <p class="muted" style="margin:0.75rem 0 0;font-size:0.75rem">Depois baixe o arquivo <code>auth-hash.json</code> em Config para usar a mesma senha na WEB.</p>
+          </div>
+
+          <!-- Login -->
+          <div id="auth-login" class="card hidden">
+            <h1 style="margin:0;font-size:1.5rem;font-weight:700">Acessar painel</h1>
+            <p class="muted" style="margin:0.4rem 0 1.25rem;font-size:0.875rem">Entre com a senha gerada no primeiro acesso.</p>
+            <form id="form-login">
+              <div class="field">
+                <label for="login-password">Senha</label>
+                <input type="password" id="login-password" autocomplete="current-password" required />
+              </div>
+              <p id="login-error" class="hidden" style="color:var(--danger);font-size:0.8rem;margin:-0.35rem 0 0.75rem"></p>
+              <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+            </form>
+            <p class="muted" style="margin:1rem 0 0;font-size:0.75rem">Galeria pública de publicados fica disponível sem login na aba Publicados (modo leitura).</p>
+            <button type="button" class="btn btn-ghost btn-block btn-sm" id="btn-public-only" style="margin-top:0.5rem">Ver só publicados</button>
+          </div>
+        </div>
+      </main>
+
+      <footer class="auth-footer">Uso pessoal · Monte local · Publique na WEB o que estiver pronto</footer>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app-screen" class="app-shell hidden">
+    <aside class="sidebar dark-panel no-print" aria-label="Menu">
+      <div class="logo" style="padding:0 0.75rem">
+        <span class="logo-mark">PM</span>
+        <span>
+          <div class="logo-title">MINISTRAÇÃO</div>
+          <div class="logo-sub">Painel</div>
+        </span>
+      </div>
+      <nav class="sidebar-nav" id="side-nav"></nav>
+      <div class="sidebar-foot">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-tema">Tema</button>
+        <button type="button" class="btn btn-danger btn-sm" id="btn-sair">Sair</button>
+      </div>
+    </aside>
+
+    <header class="topbar no-print">
+      <div class="logo">
+        <span class="logo-mark">PM</span>
+        <span>
+          <div class="logo-title">MINISTRAÇÃO</div>
+          <div class="logo-sub">Painel</div>
+        </span>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" id="btn-tema-mobile" style="color:#e8f3ee">Tema</button>
+    </header>
+
+    <main class="main">
+      <div class="main-inner" id="view-root"></div>
+    </main>
+
+    <nav class="bottom-nav no-print" aria-label="Navegação">
+      <div class="bottom-nav-grid" id="bottom-nav"></div>
+    </nav>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
