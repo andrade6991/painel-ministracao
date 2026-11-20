@@ -1,7 +1,4 @@
 {
   "version": 1,
-  "algo": "sha256",
-  "salt": "painel-ministracao-v1",
-  "hash": "b19ab731a1803972cac78941349cf204640b73d5d2ea78c582d3bacaba5ad79e",
-  "note": "Senha fixa configurada no app (acesso direto)."
+  "note": "Autenticação fixa no app (js/auth.js)."
 }

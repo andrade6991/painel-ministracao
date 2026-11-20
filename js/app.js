@@ -1,4 +1,9 @@
 import { clearSessionFlag, hasSessionOk, markSessionOk, verifyPassword } from "./auth.js";
+
+const ICO_SOL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`;
+const ICO_LUA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>`;
+const ICO_OLHO = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const ICO_OLHO_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2"/><path d="M6.1 6.1C3.7 7.8 2 12 2 12s3.5 7 10 7a10.3 10.3 0 0 0 4.3-.9"/></svg>`;
 import { downloadJson, loadStore, mergeSeedData, saveStore, uid } from "./storage.js";
 import {
   FRENTES,
@@ -49,10 +54,15 @@ function saudacao() {
 
 function syncTemaIcons() {
   const dark = document.documentElement.classList.contains("dark");
-  const ico = dark ? "☀" : "☾";
+  const html = dark ? ICO_SOL : ICO_LUA;
+  const label = dark ? "Usar modo claro" : "Usar modo escuro";
   ["#btn-tema-auth", "#btn-tema", "#btn-tema-mobile", "#btn-tema-cfg"].forEach((sel) => {
     const el = $(sel);
-    if (el) el.textContent = ico;
+    if (!el) return;
+    el.innerHTML = html;
+    el.setAttribute("aria-label", label);
+    el.setAttribute("title", label);
+    el.setAttribute("aria-pressed", dark ? "true" : "false");
   });
 }
 
@@ -86,14 +96,37 @@ async function bootAuth() {
 
 function bindAuth() {
   $("#btn-tema-auth")?.addEventListener("click", toggleTema);
+
+  const input = $("#login-password");
+  const btnVer = $("#btn-ver-senha");
+  const icoVer = $("#ico-ver-senha");
+  if (icoVer) icoVer.innerHTML = ICO_OLHO;
+  btnVer?.addEventListener("click", () => {
+    if (!input) return;
+    const mostrar = input.type === "password";
+    input.type = mostrar ? "text" : "password";
+    btnVer.setAttribute("aria-pressed", mostrar ? "true" : "false");
+    btnVer.setAttribute("aria-label", mostrar ? "Ocultar senha" : "Mostrar senha");
+    btnVer.setAttribute("title", mostrar ? "Ocultar senha" : "Mostrar senha");
+    if (icoVer) icoVer.innerHTML = mostrar ? ICO_OLHO_OFF : ICO_OLHO;
+    input.focus();
+  });
+  input?.addEventListener("keyup", (e) => {
+    const caps = e.getModifierState?.("Caps Lock") || e.getModifierState?.("CapsLock");
+    $("#caps-aviso")?.classList.toggle("hidden", !caps);
+  });
+
   $("#form-login")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const ok = await verifyPassword($("#login-password").value);
+    const raw = $("#login-password")?.value ?? "";
+    const ok = verifyPassword(raw);
+    const err = $("#login-error");
     if (!ok) {
-      $("#login-error").textContent = "Senha incorreta.";
-      $("#login-error").classList.remove("hidden");
+      err.textContent = "Senha incorreta. Toque no olho para ver o que digitou.";
+      err.classList.remove("hidden");
       return;
     }
+    err.classList.add("hidden");
     markSessionOk();
     await enterApp(false);
   });
@@ -228,7 +261,7 @@ function viewInicio(root) {
       <div class="card kpi"><span class="label">Prontos</span><span class="value">${pronto}</span></div>
     </div>
     <div class="card">
-      <div class="card-title"><div><h2>Frentes</h2><p>Onde usar a mensagem</p></div></div>
+      <div class="card-title"><div><h2>Frentes</h2></div></div>
       <div class="grid-2">
         ${FRENTES.map(
           (f) => `
@@ -822,7 +855,7 @@ function viewConfig(root) {
     <div class="stack">
       <div class="card">
         <div class="card-title"><div><h2>Tema</h2><p>Claro ou escuro</p></div>
-          <button type="button" class="btn-icon" id="btn-tema-cfg" aria-label="Alternar tema">☾</button>
+          <button type="button" class="btn-icon" id="btn-tema-cfg" aria-label="Usar modo escuro"></button>
         </div>
       </div>
       <div class="card">

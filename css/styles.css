@@ -694,11 +694,12 @@ a {
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 999px;
+  min-width: 2.5rem;
+  border-radius: 0.75rem;
   border: 1px solid var(--border);
   background: transparent;
-  color: inherit;
-  font-size: 1.1rem;
+  color: var(--muted);
+  font-size: 1rem;
   line-height: 1;
   cursor: pointer;
   padding: 0;
@@ -706,18 +707,74 @@ a {
 
 .btn-icon:hover {
   background: var(--surface-2);
+  color: var(--text);
+}
+
+.btn-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  display: block;
 }
 
 .sidebar.dark-panel .btn-icon,
 .auth-top .btn-icon,
 .topbar .btn-icon {
   border-color: #1c3d2f;
-  color: #e8f3ee;
+  color: #93aa9f;
 }
 
 .sidebar.dark-panel .btn-icon:hover,
+.auth-top .btn-icon:hover,
 .topbar .btn-icon:hover {
   background: #113022;
+  color: #e8f3ee;
+}
+
+.senha-wrap {
+  position: relative;
+}
+
+.senha-wrap input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  padding: 0.7rem 3rem 0.7rem 0.85rem;
+  min-height: 2.75rem;
+}
+
+.senha-wrap input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.senha-toggle {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 3rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 0 0.75rem 0.75rem 0;
+  font-size: 1.05rem;
+}
+
+.senha-toggle:hover {
+  color: var(--text);
+}
+
+.caps-aviso {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--warning);
+}
+
+.field .senha-wrap + .caps-aviso,
+.field .caps-aviso {
+  margin-top: 0.35rem;
 }
 
 .btn-row {
