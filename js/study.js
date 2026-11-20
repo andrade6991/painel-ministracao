@@ -1,21 +1,82 @@
 export const FRENTES = [
-  { id: "igreja", label: "Igreja", hint: "Púlpito · mensagem completa" },
+  { id: "igreja", label: "Igreja", hint: "Púlpito · completa" },
   { id: "empresa", label: "Empresa", hint: "Momento de fé · curto" },
   { id: "evangelismo", label: "Evangelismo", hint: "Cristo · convite" },
   { id: "ebd", label: "EBD", hint: "Aula · lição" },
 ];
 
+/** Tópicos do estudo — um por vez. Simples, resumido, objetivo. */
 export const STEPS = [
-  { id: "tema", title: "Tema / ideia central", hint: "Uma frase que carrega a mensagem. Só isso nesta etapa." },
-  { id: "versiculos", title: "Versículos", hint: "Texto-base: referência + citação (versão da Bíblia)." },
-  { id: "conexoes", title: "Conexões", hint: "2 a 4 textos ligados (antes/depois na Escritura)." },
-  { id: "cenario_biblico", title: "Cenário bíblico", hint: "Antes → no ponto → depois do texto." },
-  { id: "cenario_vida", title: "Cenário de vida", hint: "Anterior → atual → futuro do ouvinte." },
-  { id: "raciocinio", title: "Linha de raciocínio", hint: "Pontos numerados — o fio que não pode quebrar." },
-  { id: "frases", title: "Frases e histórias", hint: "Frases de efeito e histórias (transcrição / pesquisa)." },
-  { id: "resumo_curto", title: "Resumo curto", hint: "3–5 tópicos para oportunidade curta (empresa/abertura)." },
-  { id: "mapa", title: "Mapa mental", hint: "Revise a estrutura visual para gravar." },
-  { id: "chamada", title: "Chamada e checklist", hint: "Decisão, oração e lembretes de tempo." },
+  {
+    id: "tema",
+    short: "Tema",
+    title: "1. Tema",
+    action: "Defina o título e a ideia central em uma frase.",
+    hint: "Só o núcleo. Sem desenvolver ainda.",
+  },
+  {
+    id: "versiculos",
+    short: "Texto",
+    title: "2. Texto bíblico",
+    action: "Informe referência, versão e a citação do texto-base.",
+    hint: "Âncora da mensagem.",
+  },
+  {
+    id: "conexoes",
+    short: "Conexões",
+    title: "3. Conexões",
+    action: "Liste 2 a 4 textos ligados (um por linha).",
+    hint: "Antes / depois na Escritura.",
+  },
+  {
+    id: "cenario_biblico",
+    short: "Bíblia",
+    title: "4. Cenário bíblico",
+    action: "Preencha: antes → no ponto → depois.",
+    hint: "O que aconteceu no texto.",
+  },
+  {
+    id: "cenario_vida",
+    short: "Vida",
+    title: "5. Cenário de vida",
+    action: "Preencha: anterior → atual → futuro do ouvinte.",
+    hint: "Espelho da vida real.",
+  },
+  {
+    id: "raciocinio",
+    short: "Linha",
+    title: "6. Linha de raciocínio",
+    action: "Numere os pontos do fio (e a abertura).",
+    hint: "Ordem que não pode quebrar.",
+  },
+  {
+    id: "frases",
+    short: "Frases",
+    title: "7. Frases e histórias",
+    action: "Separe frases de efeito e histórias curtas.",
+    hint: "Tempero, não o prato.",
+  },
+  {
+    id: "resumo_curto",
+    short: "Resumo",
+    title: "8. Resumo curto",
+    action: "Escreva 3 a 5 tópicos para momento rápido.",
+    hint: "Empresa / abertura.",
+  },
+  {
+    id: "mapa",
+    short: "Mapa",
+    title: "9. Mapa mental",
+    action: "Revise o mapa. Confirme se a linha está clara.",
+    hint: "Para gravar.",
+  },
+  {
+    id: "chamada",
+    short: "Chamada",
+    title: "10. Chamada",
+    action: "Defina decisão, oração e checklist de tempo.",
+    hint: "Fechamento.",
+  },
 ];
 
 export function emptyMessage(frente = "igreja") {
@@ -43,6 +104,7 @@ export function emptyMessage(frente = "igreja") {
     checklist: "",
     transcriptionIds: [],
     notas: "",
+    analises: [],
     stepIndex: 0,
     updatedAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
@@ -90,30 +152,26 @@ export function mindBranches(msg) {
       .slice(0, 6);
 
   return [
+    { title: "Texto", items: [msg.textoBaseRef, ...(msg.conexoes ? lines(msg.conexoes) : [])].filter(Boolean) },
     {
-      title: "Versículos",
-      items: [msg.textoBaseRef, ...(msg.conexoes ? lines(msg.conexoes) : [])].filter(Boolean),
+      title: "Bíblia",
+      items: [
+        msg.cenarioBiblico?.antes && `Antes: ${msg.cenarioBiblico.antes}`,
+        msg.cenarioBiblico?.durante && `Ponto: ${msg.cenarioBiblico.durante}`,
+        msg.cenarioBiblico?.depois && `Depois: ${msg.cenarioBiblico.depois}`,
+      ].filter(Boolean),
     },
     {
-      title: "Cenário bíblico",
-      items: [msg.cenarioBiblico?.antes && `Antes: ${msg.cenarioBiblico.antes}`, msg.cenarioBiblico?.durante && `Ponto: ${msg.cenarioBiblico.durante}`, msg.cenarioBiblico?.depois && `Depois: ${msg.cenarioBiblico.depois}`].filter(Boolean),
+      title: "Vida",
+      items: [
+        msg.cenarioVida?.anterior && `Antes: ${msg.cenarioVida.anterior}`,
+        msg.cenarioVida?.atual && `Agora: ${msg.cenarioVida.atual}`,
+        msg.cenarioVida?.futuro && `Depois: ${msg.cenarioVida.futuro}`,
+      ].filter(Boolean),
     },
-    {
-      title: "Cenário de vida",
-      items: [msg.cenarioVida?.anterior && `Anterior: ${msg.cenarioVida.anterior}`, msg.cenarioVida?.atual && `Atual: ${msg.cenarioVida.atual}`, msg.cenarioVida?.futuro && `Futuro: ${msg.cenarioVida.futuro}`].filter(Boolean),
-    },
-    {
-      title: "Raciocínio",
-      items: lines(msg.raciocinio),
-    },
-    {
-      title: "Frases",
-      items: [...lines(msg.frases), ...lines(msg.historias)].slice(0, 6),
-    },
-    {
-      title: "Formato",
-      items: [...lines(msg.resumoCurto), msg.chamada && `Chamada: ${msg.chamada}`].filter(Boolean),
-    },
+    { title: "Linha", items: lines(msg.raciocinio) },
+    { title: "Frases", items: [...lines(msg.frases), ...lines(msg.historias)].slice(0, 6) },
+    { title: "Curto", items: [...lines(msg.resumoCurto), msg.chamada && `Chamada: ${msg.chamada}`].filter(Boolean) },
   ];
 }
 
@@ -152,5 +210,29 @@ export function emptyTranscription() {
     historias: "",
     textosCitados: "",
     updatedAt: new Date().toISOString(),
+  };
+}
+
+/** Modelo padrão de pedido de análise (uma etapa por vez). */
+export function promptAnalise({ mensagem, etapa, pedido = "" }) {
+  const step = STEPS.find((s) => s.id === etapa) || STEPS[mensagem?.stepIndex || 0];
+  return {
+    rol: "Especialista em ministração bíblica e linha de raciocínio pastoral.",
+    objetivoOrdem: `Analisar SOMENTE o tópico «${step.title}». Não reescrever os outros tópicos.`,
+    contexto: [
+      `Frente: ${mensagem?.frente || "—"}`,
+      `Tema: ${mensagem?.tema || "—"}`,
+      `Ideia central: ${mensagem?.ideiaCentral || "—"}`,
+      `Texto-base: ${mensagem?.textoBaseRef || "—"} (${mensagem?.versaoBiblia || "NVI"})`,
+      `Tópico atual: ${step.title}`,
+      `O que fazer neste tópico: ${step.action}`,
+    ].join("\n"),
+    especificidade: [
+      "Resposta curta, objetiva e pronta para colar no painel.",
+      "Usar tópicos claros (bullets).",
+      "Manter linguagem bíblica segura (referências corretas).",
+      "Se faltar dado, pedir só o mínimo necessário.",
+      pedido ? `Pedido desta análise: ${pedido}` : "Aprofundar este tópico com clareza e impacto.",
+    ].join("\n"),
   };
 }

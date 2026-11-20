@@ -13,6 +13,7 @@ import {
   emptyTranscription,
   mindBranches,
   progress,
+  promptAnalise,
   stepDone,
 } from "./study.js";
 
@@ -390,50 +391,102 @@ function viewEstudo(root) {
   if (!state.editingId && list[0]) state.editingId = list[0].id;
   const m = getEditingMessage();
   if (!m) {
-    root.innerHTML = `<div class="page-head"><h1>Estudo</h1></div><div class="card empty">Crie uma mensagem primeiro.</div>
-      <button type="button" class="btn btn-primary" style="margin-top:1rem" data-go="nova">Nova mensagem</button>`;
+    root.innerHTML = `<div class="page-head"><h1>Linha</h1></div><div class="card empty">Crie uma âncora primeiro.</div>
+      <button type="button" class="btn btn-primary" style="margin-top:1rem" data-go="nova">Nova âncora</button>`;
     $("[data-go]", root)?.addEventListener("click", () => go("nova"));
     return;
   }
+  if (!Array.isArray(m.analises)) m.analises = [];
   const step = STEPS[m.stepIndex] || STEPS[0];
   const p = progress(m);
+  const prompt = promptAnalise({ mensagem: m, etapa: step.id, pedido: m.notas || "" });
 
   root.innerHTML = `
     <div class="page-head">
-      <p class="muted">Estudo · ${frenteLabel(m.frente)} · etapa ${m.stepIndex + 1}/${STEPS.length}</p>
+      <p class="muted">${frenteLabel(m.frente)} · ${esc(m.textoBaseRef || "sem texto")}</p>
       <h1>${esc(m.tema || "Mensagem")}</h1>
     </div>
+
     <div class="filter-bar no-print">
       <select id="sel-msg" style="flex:1;min-width:12rem">
-        ${list.map((x) => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.tema || x.id)} (${frenteLabel(x.frente)})</option>`).join("")}
+        ${list.map((x) => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.tema || x.id)}</option>`).join("")}
       </select>
-      <span class="badge badge-accent">${p.pct}% completo</span>
+      <span class="badge badge-accent">${p.done}/${p.total}</span>
     </div>
-    <div class="stepper no-print">
-      ${STEPS.map((s, i) => {
-        const done = stepDone(m, s.id);
-        const active = i === m.stepIndex;
-        return `<button type="button" class="step-pill ${done ? "done" : ""} ${active ? "active" : ""}" data-step="${i}">${i + 1}. ${s.title.split(" ")[0]}</button>`;
-      }).join("")}
+
+    <div class="card topic-board no-print">
+      <div class="card-title"><div><h2>Tópicos</h2><p>Toque em um · trabalhe só ele</p></div></div>
+      <div class="topic-grid">
+        ${STEPS.map((s, i) => {
+          const done = stepDone(m, s.id);
+          const active = i === m.stepIndex;
+          return `<button type="button" class="topic-item ${done ? "done" : ""} ${active ? "active" : ""}" data-step="${i}">
+            <span class="topic-num">${i + 1}</span>
+            <span class="topic-name">${esc(s.short)}</span>
+            <span class="topic-state">${done ? "ok" : active ? "agora" : "—"}</span>
+          </button>`;
+        }).join("")}
+      </div>
     </div>
-    <form id="form-step" class="card step-panel">
-      <h3>${step.title}</h3>
-      <p class="hint">${step.hint}</p>
+
+    <div class="aviso ok no-print" style="margin-top:1rem">
+      <strong>Agora:</strong>&nbsp;${esc(step.action)}
+    </div>
+
+    <form id="form-step" class="card step-panel" style="margin-top:0.75rem">
+      <div class="card-title">
+        <div>
+          <h2 style="margin:0;font-size:1.05rem">${esc(step.title)}</h2>
+          <p>${esc(step.hint)}</p>
+        </div>
+        <span class="badge badge-accent">1 tópico</span>
+      </div>
       ${renderStepFields(m, step.id)}
       <div class="btn-row" style="margin-top:0.5rem">
         <button type="button" class="btn btn-secondary" id="btn-prev" ${m.stepIndex === 0 ? "disabled" : ""}>Anterior</button>
-        <button type="submit" class="btn btn-primary">Salvar etapa</button>
-        <button type="button" class="btn btn-secondary" id="btn-next" ${m.stepIndex >= STEPS.length - 1 ? "disabled" : ""}>Próxima</button>
+        <button type="submit" class="btn btn-primary">Salvar tópico</button>
+        <button type="button" class="btn btn-secondary" id="btn-next" ${m.stepIndex >= STEPS.length - 1 ? "disabled" : ""}>Próximo</button>
       </div>
     </form>
+
+    <details class="card" style="margin-top:1rem">
+      <summary class="card-title" style="cursor:pointer;list-style:none;margin:0">
+        <div><h2>Prompt desta análise</h2><p>Copie para pedir no chat · só este tópico</p></div>
+      </summary>
+      <pre class="prompt-box" id="prompt-box">${esc(`Rol:\n${prompt.rol}\n\nObjetivo/Ordem:\n${prompt.objetivoOrdem}\n\nContexto:\n${prompt.contexto}\n\nEspecificidade/Expectativas:\n${prompt.especificidade}`)}</pre>
+      <div class="btn-row" style="margin-top:0.75rem">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-prompt">Copiar prompt</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-log-analise">Registrar análise</button>
+      </div>
+    </details>
+
     <div class="card" style="margin-top:1rem">
-      <div class="card-title"><div><h2>Leitura objetiva</h2><p>O que já está sólido</p></div></div>
+      <div class="card-title"><div><h2>Visão por tópicos</h2><p>Resumo objetivo do que já está pronto</p></div></div>
       ${renderReadout(m)}
     </div>
+
+    ${
+      m.analises.length
+        ? `<div class="card" style="margin-top:1rem">
+            <div class="card-title"><div><h2>Histórico de análises</h2><p>Uma entrada por pedido</p></div></div>
+            <ul class="analise-list">
+              ${[...m.analises]
+                .reverse()
+                .slice(0, 8)
+                .map(
+                  (a) =>
+                    `<li><strong>${esc(a.topico)}</strong> · ${esc(a.data)}<br/><span class="muted">${esc(a.nota || "sem nota")}</span></li>`,
+                )
+                .join("")}
+            </ul>
+          </div>`
+        : ""
+    }
+
     <div class="btn-row no-print" style="margin-top:1rem">
-      <button type="button" class="btn btn-secondary btn-sm" data-go="nova">Editar base</button>
-      <button type="button" class="btn btn-secondary btn-sm" data-go="mapa">Mapa mental</button>
-      <button type="button" class="btn btn-primary btn-sm" id="btn-pronto">Marcar pronto</button>
+      <button type="button" class="btn btn-secondary btn-sm" data-go="nova">Âncora</button>
+      <button type="button" class="btn btn-secondary btn-sm" data-go="mapa">Mapa</button>
+      <button type="button" class="btn btn-primary btn-sm" id="btn-pronto">Pronto</button>
       <button type="button" class="btn btn-secondary btn-sm" id="btn-pub">${m.publicado ? "Despublicar" : "Publicar"}</button>
     </div>
   `;
@@ -466,6 +519,25 @@ function viewEstudo(root) {
     persist();
     render();
   });
+  $("#btn-copy-prompt")?.addEventListener("click", async () => {
+    const text = $("#prompt-box")?.textContent || "";
+    await navigator.clipboard.writeText(text);
+    const btn = $("#btn-copy-prompt");
+    if (btn) {
+      btn.textContent = "Copiado";
+      setTimeout(() => (btn.textContent = "Copiar prompt"), 1200);
+    }
+  });
+  $("#btn-log-analise")?.addEventListener("click", () => {
+    m.analises.push({
+      id: uid("an"),
+      topico: step.title,
+      nota: m.notas || step.action,
+      data: new Date().toLocaleString("pt-BR"),
+    });
+    persist();
+    render();
+  });
   $$("[data-go]", root).forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
   $("#btn-pronto").addEventListener("click", () => {
     m.status = "pronto";
@@ -481,46 +553,45 @@ function viewEstudo(root) {
 }
 
 function renderStepFields(m, stepId) {
-  const t = (name, label, val, rows = 4) =>
-    `<div class="field"><label>${label}</label><textarea name="${name}" rows="${rows}">${esc(val || "")}</textarea></div>`;
-  const i = (name, label, val) =>
-    `<div class="field"><label>${label}</label><input name="${name}" value="${esc(val || "")}" /></div>`;
+  const t = (name, label, val, rows = 3) =>
+    `<div class="field"><label>${label}</label><textarea name="${name}" rows="${rows}" placeholder="Resuma em tópicos">${esc(val || "")}</textarea></div>`;
+  const i = (name, label, val, ph = "") =>
+    `<div class="field"><label>${label}</label><input name="${name}" value="${esc(val || "")}" placeholder="${esc(ph)}" /></div>`;
 
   switch (stepId) {
     case "tema":
-      return i("tema", "Tema", m.tema) + i("ideiaCentral", "Ideia central", m.ideiaCentral);
+      return i("tema", "Tema", m.tema, "Ex.: O Pai que corre") + i("ideiaCentral", "Ideia central (1 frase)", m.ideiaCentral, "A frase que carrega tudo");
     case "versiculos":
       return (
-        i("textoBaseRef", "Referência", m.textoBaseRef) +
-        i("versaoBiblia", "Versão", m.versaoBiblia) +
-        t("textoBaseCitacao", "Citação", m.textoBaseCitacao, 5)
+        `<div class="grid-2">${i("textoBaseRef", "Referência", m.textoBaseRef, "Lucas 15:20")}${i("versaoBiblia", "Versão", m.versaoBiblia, "NVI")}</div>` +
+        t("textoBaseCitacao", "Citação", m.textoBaseCitacao, 4)
       );
     case "conexoes":
-      return t("conexoes", "Textos conectados (um por linha)", m.conexoes, 6);
+      return t("conexoes", "Textos ligados (1 por linha)", m.conexoes, 5);
     case "cenario_biblico":
       return (
-        t("bib_antes", "Antes", m.cenarioBiblico?.antes, 3) +
-        t("bib_durante", "No ponto do texto", m.cenarioBiblico?.durante, 3) +
-        t("bib_depois", "Depois / cumprimento", m.cenarioBiblico?.depois, 3)
+        t("bib_antes", "Antes", m.cenarioBiblico?.antes, 2) +
+        t("bib_durante", "No ponto", m.cenarioBiblico?.durante, 2) +
+        t("bib_depois", "Depois", m.cenarioBiblico?.depois, 2)
       );
     case "cenario_vida":
       return (
-        t("vida_anterior", "Vida — anterior", m.cenarioVida?.anterior, 3) +
-        t("vida_atual", "Vida — atual", m.cenarioVida?.atual, 3) +
-        t("vida_futuro", "Vida — futuro", m.cenarioVida?.futuro, 3)
+        t("vida_anterior", "Anterior", m.cenarioVida?.anterior, 2) +
+        t("vida_atual", "Atual", m.cenarioVida?.atual, 2) +
+        t("vida_futuro", "Futuro", m.cenarioVida?.futuro, 2)
       );
     case "raciocinio":
-      return t("raciocinio", "Pontos numerados da linha de raciocínio", m.raciocinio, 7) + t("abertura", "Abertura / gancho", m.abertura, 3);
+      return t("abertura", "Abertura", m.abertura, 2) + t("raciocinio", "Pontos numerados", m.raciocinio, 6);
     case "frases":
-      return t("frases", "Frases de efeito", m.frases, 4) + t("historias", "Histórias / exemplos", m.historias, 4);
+      return t("frases", "Frases de efeito", m.frases, 3) + t("historias", "Histórias", m.historias, 3);
     case "resumo_curto":
-      return t("resumoCurto", "3–5 tópicos (oportunidade curta)", m.resumoCurto, 5);
+      return t("resumoCurto", "3–5 tópicos", m.resumoCurto, 4);
     case "mapa":
-      return `<p class="hint">O mapa é montado automaticamente. Use o botão Mapa mental para estudar visualmente. Salve para confirmar esta etapa.</p>
+      return `<p class="hint" style="margin-top:0">Confira o mapa. Se a linha estiver clara, salve.</p>
         <input type="hidden" name="mapa_ok" value="1" />
         ${renderMindmapHtml(m)}`;
     case "chamada":
-      return t("chamada", "Chamada / decisão", m.chamada, 3) + t("oracao", "Oração", m.oracao, 3) + t("checklist", "Checklist de tempo / lembretes", m.checklist, 3);
+      return t("chamada", "Decisão", m.chamada, 2) + t("oracao", "Oração", m.oracao, 2) + t("checklist", "Tempo", m.checklist, 2);
     default:
       return "";
   }
@@ -577,33 +648,77 @@ function block(title, body) {
   return `<div class="section-block"><h3>${title}</h3><p class="prose-line">${esc(body)}</p></div>`;
 }
 
+function topicBlock(num, title, bodyHtml, ok) {
+  if (!bodyHtml) {
+    return `<div class="topic-read ${ok ? "" : "pending"}"><div class="topic-read-h"><span>${num}</span><strong>${esc(title)}</strong><em>${ok ? "ok" : "vazio"}</em></div></div>`;
+  }
+  return `<div class="topic-read ${ok ? "ok" : ""}"><div class="topic-read-h"><span>${num}</span><strong>${esc(title)}</strong><em>${ok ? "ok" : ""}</em></div><div class="topic-read-b">${bodyHtml}</div></div>`;
+}
+
 function renderReadout(m) {
   const parts = [
-    block("Ideia central", m.ideiaCentral || m.tema),
-    m.textoBaseRef
-      ? `<div class="section-block"><h3>Texto-base</h3><p><strong>${esc(m.textoBaseRef)}</strong> (${esc(m.versaoBiblia || "")})</p><p class="prose-line">${esc(m.textoBaseCitacao)}</p></div>`
-      : "",
-    block("Conexões", m.conexoes),
-    m.cenarioBiblico?.antes || m.cenarioBiblico?.durante
-      ? `<div class="section-block"><h3>Cenário bíblico</h3><ul>
-          ${m.cenarioBiblico.antes ? `<li><strong>Antes:</strong> ${esc(m.cenarioBiblico.antes)}</li>` : ""}
-          ${m.cenarioBiblico.durante ? `<li><strong>Ponto:</strong> ${esc(m.cenarioBiblico.durante)}</li>` : ""}
-          ${m.cenarioBiblico.depois ? `<li><strong>Depois:</strong> ${esc(m.cenarioBiblico.depois)}</li>` : ""}
-        </ul></div>`
-      : "",
-    m.cenarioVida?.anterior || m.cenarioVida?.atual
-      ? `<div class="section-block"><h3>Cenário de vida</h3><ul>
-          ${m.cenarioVida.anterior ? `<li><strong>Anterior:</strong> ${esc(m.cenarioVida.anterior)}</li>` : ""}
-          ${m.cenarioVida.atual ? `<li><strong>Atual:</strong> ${esc(m.cenarioVida.atual)}</li>` : ""}
-          ${m.cenarioVida.futuro ? `<li><strong>Futuro:</strong> ${esc(m.cenarioVida.futuro)}</li>` : ""}
-        </ul></div>`
-      : "",
-    block("Linha de raciocínio", m.raciocinio),
-    block("Resumo curto", m.resumoCurto),
-    block("Frases", m.frases),
-    block("Chamada", m.chamada),
-  ].filter(Boolean);
-  return parts.length ? parts.join("") : `<p class="empty">Preencha as etapas para ver o resumo aqui.</p>`;
+    topicBlock(1, "Tema", m.ideiaCentral || m.tema ? `<p class="prose-line">${esc(m.ideiaCentral || m.tema)}</p>` : "", stepDone(m, "tema")),
+    topicBlock(
+      2,
+      "Texto bíblico",
+      m.textoBaseRef
+        ? `<p><strong>${esc(m.textoBaseRef)}</strong> (${esc(m.versaoBiblia || "")})</p><p class="prose-line">${esc(m.textoBaseCitacao || "")}</p>`
+        : "",
+      stepDone(m, "versiculos"),
+    ),
+    topicBlock(3, "Conexões", m.conexoes ? `<p class="prose-line">${esc(m.conexoes)}</p>` : "", stepDone(m, "conexoes")),
+    topicBlock(
+      4,
+      "Cenário bíblico",
+      m.cenarioBiblico?.antes || m.cenarioBiblico?.durante
+        ? `<ul>
+            ${m.cenarioBiblico.antes ? `<li><strong>Antes:</strong> ${esc(m.cenarioBiblico.antes)}</li>` : ""}
+            ${m.cenarioBiblico.durante ? `<li><strong>Ponto:</strong> ${esc(m.cenarioBiblico.durante)}</li>` : ""}
+            ${m.cenarioBiblico.depois ? `<li><strong>Depois:</strong> ${esc(m.cenarioBiblico.depois)}</li>` : ""}
+          </ul>`
+        : "",
+      stepDone(m, "cenario_biblico"),
+    ),
+    topicBlock(
+      5,
+      "Cenário de vida",
+      m.cenarioVida?.anterior || m.cenarioVida?.atual
+        ? `<ul>
+            ${m.cenarioVida.anterior ? `<li><strong>Antes:</strong> ${esc(m.cenarioVida.anterior)}</li>` : ""}
+            ${m.cenarioVida.atual ? `<li><strong>Agora:</strong> ${esc(m.cenarioVida.atual)}</li>` : ""}
+            ${m.cenarioVida.futuro ? `<li><strong>Depois:</strong> ${esc(m.cenarioVida.futuro)}</li>` : ""}
+          </ul>`
+        : "",
+      stepDone(m, "cenario_vida"),
+    ),
+    topicBlock(
+      6,
+      "Linha",
+      m.raciocinio || m.abertura
+        ? `${m.abertura ? `<p class="prose-line"><strong>Abertura:</strong> ${esc(m.abertura)}</p>` : ""}<p class="prose-line">${esc(m.raciocinio || "")}</p>`
+        : "",
+      stepDone(m, "raciocinio"),
+    ),
+    topicBlock(
+      7,
+      "Frases",
+      m.frases || m.historias
+        ? `${m.frases ? `<p class="prose-line">${esc(m.frases)}</p>` : ""}${m.historias ? `<p class="prose-line muted">${esc(m.historias)}</p>` : ""}`
+        : "",
+      stepDone(m, "frases"),
+    ),
+    topicBlock(8, "Resumo curto", m.resumoCurto ? `<p class="prose-line">${esc(m.resumoCurto)}</p>` : "", stepDone(m, "resumo_curto")),
+    topicBlock(9, "Mapa", stepDone(m, "mapa") ? `<p class="muted">Estrutura pronta no Mapa.</p>` : "", stepDone(m, "mapa")),
+    topicBlock(
+      10,
+      "Chamada",
+      m.chamada || m.oracao
+        ? `${m.chamada ? `<p class="prose-line">${esc(m.chamada)}</p>` : ""}${m.oracao ? `<p class="prose-line muted">${esc(m.oracao)}</p>` : ""}`
+        : "",
+      stepDone(m, "chamada"),
+    ),
+  ];
+  return `<div class="topic-read-list">${parts.join("")}</div>`;
 }
 
 function renderMindmapHtml(m) {

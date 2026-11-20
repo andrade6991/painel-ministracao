@@ -3,36 +3,44 @@
     "id": "msg_seed_igreja",
     "frente": "igreja",
     "tema": "O Pai que corre ao encontro",
-    "ideiaCentral": "O perdão de Deus não espera você chegar limpo — Ele corre na sua direção.",
+    "ideiaCentral": "Deus não espera você chegar limpo — Ele corre na sua direção.",
     "textoBaseRef": "Lucas 15:20",
     "textoBaseCitacao": "E, levantando-se, foi para seu pai. Estando ele ainda longe, seu pai o viu e, cheio de compaixão, correu ao seu encontro, lançou-se-lhe ao pescoço e o beijou.",
     "versaoBiblia": "NVI",
     "tom": "pastoral",
     "status": "em estudo",
     "publicado": true,
-    "conexoes": "Lucas 15:11-19 — a decisão de voltar\nSalmos 103:13 — como um pai se compadece\nEfésios 2:4-5 — rico em misericórdia\n2 Coríntios 5:18-19 — ministério da reconciliação",
+    "conexoes": "Lucas 15:11-19 — a queda e a decisão de voltar\nSalmos 103:13 — o Pai se compadece dos filhos\nEfésios 2:4-5 — rico em misericórdia, ainda mortos\nRomanos 2:4 — a bondade de Deus conduz ao arrependimento",
     "cenarioBiblico": {
-      "antes": "O filho pediu a herança, desperdiçou tudo e chegou ao fundo do poço com os porcos.",
-      "durante": "Ainda longe, o pai vê, sente compaixão e corre — atitude incomum para um patriarca.",
-      "depois": "Restauração pública: melhor roupa, anel, festa. Relacionamento reatado, não só dívida quitada."
+      "antes": "Pediu a herança, foi embora e chegou aos porcos — imagem do afastamento.",
+      "durante": "Ainda longe, o pai vê, sente compaixão e corre (gesto raro na cultura).",
+      "depois": "Restaura filiação: roupa, anel, festa. Graça celebra, não humilha."
     },
     "cenarioVida": {
       "anterior": "Escolhas que afastaram de Deus, da família ou do propósito.",
-      "atual": "Vergonha, medo de voltar, ou cansaço de fingir que está tudo bem.",
-      "futuro": "Um recomeço real: aceitar o abraço, viver reconciliado e estender o mesmo perdão."
+      "atual": "Vergonha, medo de voltar ou cansaço de fingir.",
+      "futuro": "Recomeço: aceitar o abraço e estender o mesmo perdão."
     },
-    "raciocinio": "1. O afastamento começa com uma decisão de independência sem Deus.\n2. O fundo do poço revela a mentira da autonomia.\n3. Voltar é um passo; ser recebido é graça.\n4. O Pai corre — amor que toma a iniciativa.\n5. A festa mostra que reconciliação é celebração, não humilhação.",
-    "frases": "Deus não espera você chegar limpo — Ele corre sujo de estrada com você.\nA distância que você sente não é a distância que o Pai vê.\nVoltar dói menos do que continuar longe.",
-    "historias": "Um jovem que demorou anos para pedir perdão ao pai e descobriu que a porta nunca tinha sido trancada.",
-    "resumoCurto": "• Longe ainda — o Pai já vê\n• Compaixão move ação\n• Correr é a linguagem do amor\n• Recomeço com festa, não com cobrança\n• Você pode voltar hoje",
-    "abertura": "E se a pessoa de quem você mais tem vergonha de se aproximar já estiver na estrada, olhando na sua direção?",
-    "chamada": "Hoje, dê o primeiro passo de volta — em oração, em reconciliação, em entrega.",
+    "raciocinio": "1. Afastamento começa com independência sem Deus.\n2. O fundo do poço revela a mentira da autonomia.\n3. Voltar é um passo; ser recebido é graça.\n4. O Pai corre — amor que toma a iniciativa.\n5. A festa mostra reconciliação, não cobrança.",
+    "frases": "Deus não espera você chegar limpo — Ele corre na estrada com você.\nA distância que você sente não é a distância que o Pai vê.\nVoltar dói menos do que continuar longe.",
+    "historias": "Quem ensaiou o discurso de desculpas e foi interrompido pelo abraço.",
+    "resumoCurto": "• Longe ainda — o Pai já vê\n• Compaixão move ação\n• Correr é a linguagem do amor\n• Recomeço com festa\n• Você pode voltar hoje",
+    "abertura": "E se a pessoa de quem você tem vergonha já estiver na estrada, olhando na sua direção?",
+    "chamada": "Dê hoje o primeiro passo de volta — em oração e em reconciliação.",
     "oracao": "Pai, obrigado porque o Senhor corre ao nosso encontro. Ensina-nos a voltar e a receber quem volta.",
-    "checklist": "Abertura 3 min · Texto 5 · Contexto 8 · Aplicação 8 · Chamada 4 · Oração 2",
+    "checklist": "Abertura 3 · Texto 5 · Contexto 8 · Aplicação 8 · Chamada 4 · Oração 2",
     "transcriptionIds": ["tr_seed_1"],
-    "notas": "Seed de exemplo — frente Igreja. Ajuste etapa a etapa.",
-    "stepIndex": 0,
-    "updatedAt": "2026-03-19T12:00:00.000Z",
+    "notas": "Análise 1 — revisão completa por tópicos (Igreja).",
+    "analises": [
+      {
+        "id": "an_seed_1",
+        "topico": "Revisão completa (10 tópicos)",
+        "nota": "Primeira análise UX + conteúdo bíblico. Linha pronta para pregação.",
+        "data": "20/03/2026, 10:50"
+      }
+    ],
+    "stepIndex": 5,
+    "updatedAt": "2026-03-20T13:50:00.000Z",
     "createdAt": "2026-03-19T12:00:00.000Z"
   },
   {
@@ -48,25 +56,26 @@
     "publicado": true,
     "conexoes": "Colossenses 3:23 — trabalhar de coração\nProvérbios 10:9 — quem anda com integridade anda seguro",
     "cenarioBiblico": {
-      "antes": "Sabedoria prática de Israel sobre caminhos que sustentam ou derrubam uma vida.",
+      "antes": "Sabedoria prática sobre caminhos que sustentam ou derrubam.",
       "durante": "Integridade como bússola — não só regra externa.",
-      "depois": "Segurança relacional e legado; a falsidade cobra juros."
+      "depois": "Segurança e legado; a falsidade cobra juros."
     },
     "cenarioVida": {
       "anterior": "Atalhos que 'todo mundo faz'.",
       "atual": "Pressão de meta, prazo e imagem.",
-      "futuro": "Confiança construída — equipe e clientes que dormem tranquilos."
+      "futuro": "Confiança construída — equipe e clientes em paz."
     },
     "raciocinio": "1. Resultado sem caráter é crédito caro.\n2. Integridade guia decisões pequenas.\n3. Cultura nasce do que se tolera em silêncio.",
     "frases": "Meta não justifica atalho.\nIntegridade é produtividade de longo prazo.",
     "historias": "",
     "resumoCurto": "• Integridade guia\n• Pressão revela caráter\n• Confiança é ativo\n• Uma decisão honesta hoje",
-    "abertura": "Em 5 minutos: o que sustenta uma carreira quando o trimestre aperta?",
+    "abertura": "O que sustenta uma carreira quando o trimestre aperta?",
     "chamada": "Escolha uma decisão esta semana em que a integridade custe mais — e pague o preço.",
     "oracao": "Senhor, dá coragem para o caminho reto no trabalho.",
     "checklist": "3–5 min · 1 texto · 1 frase · 1 aplicação",
     "transcriptionIds": [],
-    "notas": "Seed Empresa — momento de fé curto.",
+    "notas": "",
+    "analises": [],
     "stepIndex": 7,
     "updatedAt": "2026-03-19T12:00:00.000Z",
     "createdAt": "2026-03-19T12:00:00.000Z"
@@ -85,7 +94,7 @@
     "conexoes": "João 3:16\nEfésios 2:8-9\n2 Coríntios 5:21",
     "cenarioBiblico": {
       "antes": "Humanidade incapaz de se justificar sozinha.",
-      "durante": "Amor demonstrado na cruz — enquanto ainda éramos pecadores.",
+      "durante": "Amor demonstrado na cruz — ainda pecadores.",
       "depois": "Justificados pela fé, paz com Deus (Rm 5:1)."
     },
     "cenarioVida": {
@@ -93,16 +102,17 @@
       "atual": "Vazio, culpa ou curiosidade sincera.",
       "futuro": "Vida reconciliada com Deus por Cristo."
     },
-    "raciocinio": "1. Problema: pecadores.\n2. Prova de amor: a cruz.\n3. Resposta: confiar em Cristo.\n4. Convite claro hoje.",
+    "raciocinio": "1. Problema: pecadores.\n2. Prova: a cruz.\n3. Resposta: confiar em Cristo.\n4. Convite claro hoje.",
     "frases": "Deus não esperou você melhorar para te amar.",
     "historias": "",
     "resumoCurto": "• Amor demonstrado\n• Ainda pecadores\n• Cristo no centro\n• Decisão agora",
     "abertura": "E se o amor mais verdadeiro não pedisse que você chegasse pronto?",
-    "chamada": "Entregue sua vida a Jesus hoje — ore comigo.",
+    "chamada": "Entregue sua vida a Jesus hoje.",
     "oracao": "Jesus, creio que morreste por mim. Perdoa-me e sê meu Senhor.",
     "checklist": "Gancho 2 · Texto 3 · Evangelho 5 · Convite 3",
     "transcriptionIds": [],
-    "notas": "Seed Evangelismo.",
+    "notas": "",
+    "analises": [],
     "stepIndex": 0,
     "updatedAt": "2026-03-19T12:00:00.000Z",
     "createdAt": "2026-03-19T12:00:00.000Z"
