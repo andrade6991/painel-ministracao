@@ -1,8 +1,8 @@
 export const FRENTES = [
-  { id: "igreja", label: "Igreja", hint: "Ministração completa" },
-  { id: "empresa", label: "Empresa", hint: "Momento de fé curto" },
-  { id: "evangelismo", label: "Evangelismo", hint: "Gancho + Cristo + convite" },
-  { id: "ebd", label: "EBD", hint: "Plano conforme a lição" },
+  { id: "igreja", label: "Igreja", hint: "Púlpito · mensagem completa" },
+  { id: "empresa", label: "Empresa", hint: "Momento de fé · curto" },
+  { id: "evangelismo", label: "Evangelismo", hint: "Cristo · convite" },
+  { id: "ebd", label: "EBD", hint: "Aula · lição" },
 ];
 
 export const STEPS = [

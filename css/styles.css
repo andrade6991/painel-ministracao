@@ -465,9 +465,10 @@ a {
   color: #0a5c3c;
   display: grid;
   place-items: center;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 1.15rem;
+  line-height: 1;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
   border: 1px solid rgb(0 0 0 / 0.05);
 }
@@ -685,6 +686,38 @@ a {
 
 .btn-block {
   width: 100%;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-icon:hover {
+  background: var(--surface-2);
+}
+
+.sidebar.dark-panel .btn-icon,
+.auth-top .btn-icon,
+.topbar .btn-icon {
+  border-color: #1c3d2f;
+  color: #e8f3ee;
+}
+
+.sidebar.dark-panel .btn-icon:hover,
+.topbar .btn-icon:hover {
+  background: #113022;
 }
 
 .btn-row {

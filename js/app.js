@@ -1,14 +1,4 @@
-import {
-  clearSessionFlag,
-  exportAuthHash,
-  generatePassword,
-  getStoredHash,
-  hasSessionOk,
-  loadDeployedHash,
-  markSessionOk,
-  savePassword,
-  verifyPassword,
-} from "./auth.js";
+import { clearSessionFlag, hasSessionOk, markSessionOk, verifyPassword } from "./auth.js";
 import { downloadJson, loadStore, mergeSeedData, saveStore, uid } from "./storage.js";
 import {
   FRENTES,
@@ -26,7 +16,6 @@ const state = {
   view: "inicio",
   editingId: null,
   editingType: "message",
-  draftPass: "",
   filterFrente: "todas",
   filterQ: "",
   publicOnly: false,
@@ -58,13 +47,24 @@ function saudacao() {
   return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
 }
 
+function syncTemaIcons() {
+  const dark = document.documentElement.classList.contains("dark");
+  const ico = dark ? "☀" : "☾";
+  ["#btn-tema-auth", "#btn-tema", "#btn-tema-mobile", "#btn-tema-cfg"].forEach((sel) => {
+    const el = $(sel);
+    if (el) el.textContent = ico;
+  });
+}
+
 function toggleTema() {
   document.documentElement.classList.toggle("dark");
   localStorage.setItem("painel_tema", document.documentElement.classList.contains("dark") ? "escuro" : "claro");
+  syncTemaIcons();
 }
 
 function applyTema() {
   if (localStorage.getItem("painel_tema") === "escuro") document.documentElement.classList.add("dark");
+  syncTemaIcons();
 }
 
 function persist() {
@@ -74,46 +74,18 @@ function persist() {
 /* —— Auth UI —— */
 async function bootAuth() {
   applyTema();
-  await loadDeployedHash();
-  const hash = getStoredHash();
-  if (hasSessionOk() && hash) {
+  if (hasSessionOk()) {
     await enterApp(false);
     return;
   }
   $("#auth-screen").classList.remove("hidden");
   $("#app-screen").classList.add("hidden");
-  if (!hash) {
-    $("#auth-setup").classList.remove("hidden");
-    $("#auth-login").classList.add("hidden");
-    state.draftPass = generatePassword();
-    $("#generated-password").textContent = state.draftPass;
-  } else {
-    $("#auth-setup").classList.add("hidden");
-    $("#auth-login").classList.remove("hidden");
-  }
+  $("#auth-login")?.classList.remove("hidden");
+  syncTemaIcons();
 }
 
 function bindAuth() {
   $("#btn-tema-auth")?.addEventListener("click", toggleTema);
-  $("#btn-regen-pass")?.addEventListener("click", () => {
-    state.draftPass = generatePassword();
-    $("#generated-password").textContent = state.draftPass;
-  });
-  $("#btn-copy-pass")?.addEventListener("click", async () => {
-    await navigator.clipboard.writeText(state.draftPass);
-    $("#btn-copy-pass").textContent = "Copiado!";
-    setTimeout(() => ($("#btn-copy-pass").textContent = "Copiar"), 1500);
-  });
-  $("#confirm-saved")?.addEventListener("change", (e) => {
-    $("#btn-save-access").disabled = !e.target.checked;
-  });
-  $("#btn-save-access")?.addEventListener("click", async () => {
-    await savePassword(state.draftPass);
-    const pack = exportAuthHash();
-    downloadJson("auth-hash.json", pack);
-    markSessionOk();
-    await enterApp(true);
-  });
   $("#form-login")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const ok = await verifyPassword($("#login-password").value);
@@ -143,17 +115,17 @@ async function enterApp(first, publicOnly = false) {
 
 function buildNav() {
   const items = state.publicOnly
-    ? [{ id: "publicados", label: "Publicados", ico: "◎" }]
+    ? [{ id: "publicados", label: "Prontos", ico: "◎" }]
     : [
-        { id: "inicio", label: "Início", ico: "⌂" },
-        { id: "biblioteca", label: "Biblioteca", ico: "☰" },
-        { id: "nova", label: "Nova", ico: "+" },
-        { id: "estudo", label: "Estudo", ico: "◇" },
+        { id: "inicio", label: "Início", ico: "✝" },
+        { id: "biblioteca", label: "Acervo", ico: "☰" },
+        { id: "nova", label: "Âncora", ico: "＋" },
+        { id: "estudo", label: "Linha", ico: "◇" },
         { id: "mapa", label: "Mapa", ico: "✦" },
-        { id: "transcricoes", label: "Transcrições", ico: "✎" },
+        { id: "transcricoes", label: "Vozes", ico: "✎" },
         { id: "ebd", label: "EBD", ico: "▣" },
-        { id: "publicados", label: "Publicados", ico: "◎" },
-        { id: "config", label: "Config", ico: "⚙" },
+        { id: "publicados", label: "Prontos", ico: "◎" },
+        { id: "config", label: "Ajustes", ico: "⚙" },
       ];
 
   const side = $("#side-nav");
@@ -165,19 +137,19 @@ function buildNav() {
     .join("");
 
   const bottomItems = state.publicOnly
-    ? [{ id: "publicados", label: "Publicados", ico: "◎" }]
+    ? [{ id: "publicados", label: "Prontos", ico: "◎" }]
     : [
-        { id: "inicio", label: "Início", ico: "⌂" },
-        { id: "biblioteca", label: "Lista", ico: "☰" },
-        { id: "nova", label: "Nova", fab: true },
-        { id: "estudo", label: "Estudo", ico: "◇" },
+        { id: "inicio", label: "Início", ico: "✝" },
+        { id: "biblioteca", label: "Acervo", ico: "☰" },
+        { id: "nova", label: "Âncora", fab: true },
+        { id: "estudo", label: "Linha", ico: "◇" },
         { id: "mais", label: "Mais", ico: "▦" },
       ];
 
   $("#bottom-nav").innerHTML = bottomItems
     .map((i) => {
       if (i.fab) {
-        return `<div class="fab-wrap"><button type="button" class="fab" data-nav="nova" aria-label="Nova">+</button><span style="font-size:0.68rem;font-weight:600;color:#93aa9f">Nova</span></div>`;
+        return `<div class="fab-wrap"><button type="button" class="fab" data-nav="nova" aria-label="Nova âncora">✝</button><span style="font-size:0.68rem;font-weight:600;color:#93aa9f">Âncora</span></div>`;
       }
       const active = state.view === i.id || (i.id === "mais" && ["mapa", "transcricoes", "ebd", "publicados", "config"].includes(state.view));
       return `<button type="button" class="bottom-item ${active ? "active" : ""}" data-nav="${i.id}"><span class="pill">${i.ico}</span>${i.label}</button>`;
@@ -200,6 +172,7 @@ function buildNav() {
 
   $("#btn-tema")?.addEventListener("click", toggleTema);
   $("#btn-tema-mobile")?.addEventListener("click", toggleTema);
+  syncTemaIcons();
   $("#btn-sair")?.addEventListener("click", () => {
     clearSessionFlag();
     state.publicOnly = false;
@@ -236,49 +209,35 @@ function render() {
 
 function viewInicio(root) {
   const msgs = state.store.messages;
-  const pub = msgs.filter((m) => m.publicado).length;
   const estudo = msgs.filter((m) => m.status === "em estudo" || m.status === "rascunho").length;
-  const byFrente = FRENTES.map((f) => ({ ...f, n: msgs.filter((m) => m.frente === f.id).length }));
+  const pronto = msgs.filter((m) => m.publicado || m.status === "pronto").length;
 
   root.innerHTML = `
     <div class="page-head">
-      <p class="muted">${new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(new Date())}</p>
-      <h1>${saudacao()}. <span class="accent">Vamos estudar.</span></h1>
+      <p class="muted">${saudacao()}</p>
+      <h1>Estudo da <span class="accent">Palavra</span></h1>
     </div>
     <div class="quick no-print">
-      <button type="button" data-go="nova"><span class="ico">＋</span>Nova</button>
-      <button type="button" data-go="biblioteca"><span class="ico">☰</span>Lista</button>
-      <button type="button" data-go="estudo"><span class="ico">◇</span>Etapas</button>
+      <button type="button" data-go="nova"><span class="ico">✝</span>Âncora</button>
+      <button type="button" data-go="estudo"><span class="ico">◇</span>Linha</button>
+      <button type="button" data-go="mapa"><span class="ico">✦</span>Mapa</button>
       <button type="button" data-go="ebd"><span class="ico">▣</span>EBD</button>
     </div>
-    <div class="grid-4" style="margin-bottom:1rem">
-      <div class="card kpi"><span class="label">Mensagens</span><span class="value">${msgs.length}</span></div>
+    <div class="grid-2" style="margin-bottom:1rem">
       <div class="card kpi"><span class="label">Em estudo</span><span class="value">${estudo}</span></div>
-      <div class="card kpi"><span class="label">Publicadas</span><span class="value">${pub}</span></div>
-      <div class="card kpi"><span class="label">Transcrições</span><span class="value">${state.store.transcriptions.length}</span></div>
+      <div class="card kpi"><span class="label">Prontos</span><span class="value">${pronto}</span></div>
     </div>
     <div class="card">
-      <div class="card-title"><div><h2>Frentes</h2><p>Onde cada mensagem será usada</p></div></div>
+      <div class="card-title"><div><h2>Frentes</h2><p>Onde usar a mensagem</p></div></div>
       <div class="grid-2">
-        ${byFrente
-          .map(
-            (f) => `
+        ${FRENTES.map(
+          (f) => `
           <button type="button" class="card" style="padding:0.85rem;cursor:pointer;text-align:left" data-frente="${f.id}">
             <strong>${f.label}</strong>
-            <p class="muted" style="margin:0.25rem 0 0;font-size:0.8rem">${f.hint} · ${f.n}</p>
+            <p class="muted" style="margin:0.25rem 0 0;font-size:0.8rem">${f.hint}</p>
           </button>`,
-          )
-          .join("")}
+        ).join("")}
       </div>
-    </div>
-    <div class="card" style="margin-top:1rem">
-      <div class="card-title"><div><h2>Como estudar</h2><p>Uma etapa por vez — clareza sem poluir</p></div></div>
-      <ol style="margin:0;padding-left:1.2rem;font-size:0.9rem;line-height:1.55;color:var(--muted)">
-        <li>Escolha a frente e o tema.</li>
-        <li>Avance no Estudo etapa a etapa.</li>
-        <li>Use o mapa mental para gravar.</li>
-        <li>Marque pronto e publique só o necessário.</li>
-      </ol>
     </div>
   `;
   $$("[data-go]", root).forEach((b) => b.addEventListener("click", () => go(b.dataset.go)));
@@ -313,7 +272,7 @@ function viewBiblioteca(root) {
     list = list.filter((m) => `${m.tema} ${m.ideiaCentral} ${m.textoBaseRef}`.toLowerCase().includes(q));
   }
   root.innerHTML = `
-    <div class="page-head"><p class="muted">Acervo</p><h1>Biblioteca</h1></div>
+    <div class="page-head"><p class="muted">Mensagens</p><h1>Acervo</h1></div>
     <div class="filter-bar no-print">
       <select id="filtro-frente">
         <option value="todas">Todas as frentes</option>
@@ -349,7 +308,7 @@ function viewNova(root) {
   const edit = getEditingMessage();
   const m = edit || emptyMessage(state.filterFrente !== "todas" ? state.filterFrente : "igreja");
   root.innerHTML = `
-    <div class="page-head"><p class="muted">${edit ? "Editar âncora" : "Nova mensagem"}</p><h1>${edit ? "Ajustar base" : "Começar pelo essencial"}</h1></div>
+    <div class="page-head"><p class="muted">${edit ? "Editar" : "Nova"}</p><h1>${edit ? "Ajustar âncora" : "Âncora bíblica"}</h1></div>
     <form id="form-nova" class="card stack">
       <div class="grid-2">
         <div class="field"><label>Frente</label>
@@ -795,7 +754,7 @@ function viewPublicados(root) {
   const msgs = state.store.messages.filter((m) => m.publicado);
   const aulas = state.store.ebd.filter((a) => a.publicado);
   root.innerHTML = `
-    <div class="page-head"><p class="muted">Acervo online</p><h1>Publicados</h1></div>
+    <div class="page-head"><p class="muted">Acervo</p><h1>Prontos</h1></div>
     ${
       !msgs.length && !aulas.length
         ? `<div class="card empty">Nada publicado ainda. No Estudo, use Publicar quando estiver pronto.</div>`
@@ -834,14 +793,14 @@ function viewPublicados(root) {
 
 function viewMais(root) {
   const items = [
-    { id: "mapa", label: "Mapa mental", desc: "Visual para gravar" },
-    { id: "transcricoes", label: "Transcrições", desc: "Frases e histórias" },
+    { id: "mapa", label: "Mapa", desc: "Estrutura visual" },
+    { id: "transcricoes", label: "Vozes", desc: "Frases e histórias" },
     { id: "ebd", label: "EBD", desc: "Plano de aula" },
-    { id: "publicados", label: "Publicados", desc: "Acervo pronto" },
-    { id: "config", label: "Config", desc: "Senha, export, tema" },
+    { id: "publicados", label: "Prontos", desc: "Acervo publicado" },
+    { id: "config", label: "Ajustes", desc: "Backup e tema" },
   ];
   root.innerHTML = `
-    <div class="page-head"><p class="muted">Mais opções</p><h1>Menu</h1></div>
+    <div class="page-head"><p class="muted">Mais</p><h1>Menu</h1></div>
     <div class="list">
       ${items
         .map(
@@ -859,44 +818,28 @@ function viewMais(root) {
 
 function viewConfig(root) {
   root.innerHTML = `
-    <div class="page-head"><p class="muted">Segurança e publicação</p><h1>Config</h1></div>
+    <div class="page-head"><p class="muted">Backup e tema</p><h1>Ajustes</h1></div>
     <div class="stack">
       <div class="card">
-        <div class="card-title"><div><h2>Senha</h2><p>Mesma senha na WEB após enviar o hash</p></div></div>
-        <div class="btn-row">
-          <button type="button" class="btn btn-secondary" id="btn-export-auth">Baixar auth-hash.json</button>
-          <button type="button" class="btn btn-danger" id="btn-reset-auth">Trocar senha (novo 1º acesso)</button>
+        <div class="card-title"><div><h2>Tema</h2><p>Claro ou escuro</p></div>
+          <button type="button" class="btn-icon" id="btn-tema-cfg" aria-label="Alternar tema">☾</button>
         </div>
       </div>
       <div class="card">
-        <div class="card-title"><div><h2>Exportar acervo</h2><p>Para commit no GitHub / backup</p></div></div>
+        <div class="card-title"><div><h2>Exportar</h2><p>Backup do acervo</p></div></div>
         <div class="btn-row">
-          <button type="button" class="btn btn-primary" id="btn-export-all">Baixar pacote data</button>
-          <button type="button" class="btn btn-secondary" id="btn-export-msg">Só mensagens</button>
+          <button type="button" class="btn btn-primary" id="btn-export-all">Pacote completo</button>
+          <button type="button" class="btn btn-secondary" id="btn-export-msg">Mensagens</button>
         </div>
-        <p class="muted" style="margin:0.75rem 0 0;font-size:0.8rem">Fluxo: monte aqui → exporte → substitua arquivos em <code>data/</code> → push → Vercel atualiza.</p>
       </div>
       <div class="card">
-        <div class="card-title"><div><h2>Importar JSON</h2><p>Mensagens, transcrições ou EBD</p></div></div>
+        <div class="card-title"><div><h2>Importar</h2><p>JSON do acervo</p></div></div>
         <input type="file" id="import-file" accept="application/json" />
-      </div>
-      <div class="card">
-        <div class="card-title"><div><h2>Tema</h2><p>Claro ou escuro</p></div></div>
-        <button type="button" class="btn btn-secondary" id="btn-tema-cfg">Alternar claro / escuro</button>
       </div>
     </div>
   `;
-  $("#btn-export-auth").addEventListener("click", () => {
-    const pack = exportAuthHash();
-    if (!pack) return alert("Nenhuma senha configurada.");
-    downloadJson("auth-hash.json", pack);
-  });
-  $("#btn-reset-auth").addEventListener("click", () => {
-    if (!confirm("Isso apaga a senha atual deste aparelho. Continuar?")) return;
-    localStorage.removeItem("painel_ministracao_auth_hash");
-    clearSessionFlag();
-    bootAuth();
-  });
+  syncTemaIcons();
+  $("#btn-tema-cfg").addEventListener("click", toggleTema);
   $("#btn-export-all").addEventListener("click", () => {
     downloadJson("painel-data-pack.json", {
       messages: state.store.messages,
@@ -906,7 +849,6 @@ function viewConfig(root) {
     });
   });
   $("#btn-export-msg").addEventListener("click", () => downloadJson("messages.json", state.store.messages));
-  $("#btn-tema-cfg").addEventListener("click", toggleTema);
   $("#import-file").addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -919,7 +861,7 @@ function viewConfig(root) {
         if (json.ebd) state.store.ebd = json.ebd;
       }
       persist();
-      alert("Importado com sucesso.");
+      alert("Importado.");
       go("biblioteca");
     } catch {
       alert("JSON inválido.");

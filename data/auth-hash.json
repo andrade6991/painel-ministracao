@@ -2,6 +2,6 @@
   "version": 1,
   "algo": "sha256",
   "salt": "painel-ministracao-v1",
-  "hash": null,
-  "note": "No primeiro acesso, gere a senha no painel e substitua este arquivo pelo auth-hash.json baixado em Config. Depois faça commit/push para a mesma senha valer na WEB."
+  "hash": "b19ab731a1803972cac78941349cf204640b73d5d2ea78c582d3bacaba5ad79e",
+  "note": "Senha fixa configurada no app (acesso direto)."
 }
