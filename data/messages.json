@@ -1,5 +1,130 @@
 [
   {
+    "id": "msg_lucas24_igreja",
+    "frente": "igreja",
+    "tema": "Esperança viva no caminho de Emaús",
+    "ideiaCentral": "Quando a esperança parece morta, Jesus ainda caminha ao lado — e a Palavra + a mesa abrem os olhos.",
+    "textoBaseRef": "Lucas 24:13-35",
+    "textoBaseCitacao": "Naquele mesmo dia, dois dos seguidores de Jesus estavam caminhando para o povoado de Emaús… quando de repente o próprio Jesus veio, uniu-se a eles e começou a andar ao lado deles! Porém os olhos deles estavam fechados, de sorte que não o reconheceram. […] Quando iam comer, ele tomou um pão, deu graças, partiu-o e o deu a eles, quando, de repente, os seus olhos foram abertos e eles o reconheceram! […] “Não estava queimando o nosso coração quando ele nos falava e nos explicava as Escrituras durante a caminhada pela estrada?”",
+    "versaoBiblia": "ONBV",
+    "tom": "pastoral",
+    "status": "pronto",
+    "publicado": true,
+    "mapaImagens": [
+      {
+        "titulo": "Caminho de volta",
+        "arquivo": "assets/mindmaps/msg_lucas24_igreja/01-emaus.svg",
+        "legenda": "Emaús: o caminho do desânimo e do retrocesso"
+      },
+      {
+        "titulo": "Ele caminha junto",
+        "arquivo": "assets/mindmaps/msg_lucas24_igreja/02-ao-lado.svg",
+        "legenda": "Jesus se aproxima mesmo com os olhos fechados"
+      },
+      {
+        "titulo": "Olhos abertos",
+        "arquivo": "assets/mindmaps/msg_lucas24_igreja/03-mesa.svg",
+        "legenda": "Palavra que queima o coração · pão que abre os olhos"
+      },
+      {
+        "titulo": "Entre os vivos",
+        "arquivo": "assets/mindmaps/msg_lucas24_igreja/04-vivo.svg",
+        "legenda": "Não procure entre os mortos Aquele que vive"
+      }
+    ],
+    "conexoes": "Lucas 24:5-6 — por que procurar entre os mortos Aquele que vive?\nLucas 24:21 — “nós pensávamos que era ele…” (esperança frustrada)\nHebreus 12:2 — autor e consumador da fé; esperança viva\nJoão 20:19-20 — “Paz seja convosco” após a ressurreição\n1 Pedro 1:3 — regenerados para uma esperança viva",
+    "cenarioBiblico": {
+      "antes": "A cruz. A esperança (Messias) parece morta. Dois discípulos deixam Jerusalém (lugar da promessa) e voltam para Emaús — caminho de retrocesso. Mulheres ainda buscam Jesus no sepulcro.",
+      "durante": "Jesus se junta a eles sem ser reconhecido. Pergunta, escuta a frustração (“nós esperávamos…”), explica as Escrituras desde Moisés. Na mesa, parte o pão — olhos se abrem. Anjos: “Ele não está aqui; ressuscitou.”",
+      "depois": "Coração queima. Reconhecem. Voltam a Jerusalém com urgência. A esperança não é um sentimento — é uma Pessoa viva que caminha, explica e se revela."
+    },
+    "cenarioVida": {
+      "anterior": "Planos, ministérios, casamentos ou sonhos que “deveriam” dar certo — e quebraram.",
+      "atual": "Desânimo, vontade de voltar ao automático antigo, olhos fechados para a presença de Deus no caminho.",
+      "futuro": "Reconhecer Jesus na Palavra e na comunhão; voltar do Emaús emocional para a missão; viver como quem serve a um Cristo vivo, não a uma memória."
+    },
+    "raciocinio": "1. Esperança tem nome: Jesus — não é só otimismo.\n2. Emaús é o caminho do retrocesso quando a expectativa morre.\n3. Ele caminha ao lado mesmo quando os olhos estão fechados.\n4. A Palavra queima o coração antes dos olhos abrirem.\n5. A mesa (presença + pão) revela quem estava ali o tempo todo.\n6. Não procure entre os mortos Aquele que vive — mude o lugar da busca.\n7. Quem reconhece Jesus deixa o caminho de volta e retorna à missão.",
+    "frases": "A esperança é a última que morre — e há 2.000 anos ela morreu de fato… e ressuscitou.\nEmaús é o caminho de quem desiste do lugar da promessa.\nJesus pergunta pelo seu desânimo antes de explicar a Escritura.\nO coração pode queimar antes dos olhos abrirem.\nNão procure no cemitério Quem já está vivo.\nA mesa do Cordeiro abre os olhos para Ele — não só para a sua miséria.",
+    "historias": "Dois discípulos caminhando horas, conversando sobre a decepção, sem perceber que a própria Esperança caminhava ao lado.\nPedro, após a cruz, volta a pescar — o automático do desespero.\nMulheres no sepulcro ouvindo: “Por que procuram entre os mortos Aquele que vive?”",
+    "resumoCurto": "• Esperança = Pessoa (Jesus)\n• Emaús = caminho do desânimo\n• Ele caminha ao lado\n• Palavra queima · mesa revela\n• Busque entre os vivos",
+    "abertura": "Você já caminhou para o seu “Emaús” — voltando para casa sem esperança — sem perceber que Jesus ainda estava ao seu lado?",
+    "chamada": "Hoje: pare o caminho de retrocesso. Abra a Escritura, sente-se à mesa com Ele e peça: “Fica conosco.” Depois volte para a missão com o coração queimando.",
+    "oracao": "Jesus, Esperança viva, abre nossos olhos. Queima nosso coração com a Tua Palavra. Não nos deixes procurar entre os mortos Aquele que vive. Fica conosco e nos envia de volta.",
+    "checklist": "Abertura 3 · Texto 6 · Contexto Emaús 8 · Palavra/mesa 8 · Vivos vs mortos 5 · Chamada 4 · Oração 2",
+    "notas": "Montado a partir de 4 transcrições (Lc 24 / Emaús / esperança / vivos). Input só no Cursor — não publicado como áudio.",
+    "analises": [
+      {
+        "id": "an_lucas24_1",
+        "topico": "Montagem completa (10 tópicos)",
+        "nota": "Síntese pastoral das 4 mensagens sobre Lucas 24.",
+        "data": "20/11/2026"
+      }
+    ],
+    "stepIndex": 9,
+    "updatedAt": "2026-11-20T16:45:00.000Z",
+    "createdAt": "2026-11-20T16:45:00.000Z"
+  },
+  {
+    "id": "msg_lucas24_empresa",
+    "frente": "empresa",
+    "tema": "Não volte para Emaús",
+    "ideiaCentral": "Quando o plano quebra, não volte ao automático antigo — reconheça Quem ainda caminha ao seu lado.",
+    "textoBaseRef": "Lucas 24:15-16",
+    "textoBaseCitacao": "quando de repente o próprio Jesus veio, uniu-se a eles e começou a andar ao lado deles! Porém os olhos deles estavam fechados, de sorte que não o reconheceram.",
+    "versaoBiblia": "ONBV",
+    "tom": "corporativo",
+    "status": "pronto",
+    "publicado": true,
+    "mapaImagens": [
+      {
+        "titulo": "Plano quebrado",
+        "arquivo": "assets/mindmaps/msg_lucas24_empresa/01-plano.svg",
+        "legenda": "“Nós pensávamos…” — expectativa frustrada"
+      },
+      {
+        "titulo": "Alguém ao lado",
+        "arquivo": "assets/mindmaps/msg_lucas24_empresa/02-lado.svg",
+        "legenda": "Presença no caminho, mesmo sem perceber"
+      },
+      {
+        "titulo": "Olhos abertos",
+        "arquivo": "assets/mindmaps/msg_lucas24_empresa/03-decisao.svg",
+        "legenda": "Sair do automático · decisão com clareza"
+      }
+    ],
+    "conexoes": "Lucas 24:21 — “nós pensávamos que era ele…”\nLucas 24:5-6 — não procure entre os mortos Aquele que vive\nColossenses 3:23 — trabalhar de coração para o Senhor",
+    "cenarioBiblico": {
+      "antes": "Discípulos tinham um plano claro de libertação. A cruz destroçou a expectativa.",
+      "durante": "No caminho de volta (Emaús), conversam frustrados. Jesus caminha junto — eles não reconhecem.",
+      "depois": "Clareza na mesa; voltam com propósito renovado — não com o piloto automático do desânimo."
+    },
+    "cenarioVida": {
+      "anterior": "Meta, projeto ou promoção que “tinha que dar certo”.",
+      "atual": "Frustração, silêncio na equipe, vontade de voltar ao jeito antigo (atalho, reclamar, desistir).",
+      "futuro": "Decisões com olhos abertos: fé, integridade e presença de Deus no meio da pressão."
+    },
+    "raciocinio": "1. Expectativa quebrada não anula a presença de Deus.\n2. O “caminho de Emaús” no trabalho é o retorno ao automático.\n3. Quem caminha ao lado pode estar ali — você só não reconheceu ainda.\n4. Clareza vem quando paramos de só reclamar e abrimos espaço para a verdade.\n5. Decisão prática: uma atitude nova esta semana.",
+    "frases": "Não volte para Emaús só porque o plano morreu.\nOlhos fechados não significam caminho vazio.\nFrustração conversa alto — presença fala mais baixo, mas está ali.",
+    "historias": "Dois profissionais (discípulos) saindo “do escritório da promessa” de volta para casa, revisando o fracasso — sem ver o Líder ao lado.",
+    "resumoCurto": "• Plano quebrou — presença permanece\n• Emaús = automático do desânimo\n• Reconheça Quem caminha junto\n• Uma decisão com olhos abertos",
+    "abertura": "Quando o trimestre ou o projeto não sai como esperado, para onde a sua mente “volta”?",
+    "chamada": "Escolha hoje uma decisão que não seja o automático do desânimo — peça clareza e aja com fé e integridade.",
+    "oracao": "Senhor, abre nossos olhos no trabalho. Livra-nos do caminho de Emaús. Dá clareza e coragem para decidir certo.",
+    "checklist": "2 min gancho · 1 min texto · 2 min aplicação · 1 min chamada",
+    "notas": "Versão curta corporativa a partir das transcrições de Lucas 24.",
+    "analises": [
+      {
+        "id": "an_lucas24_emp",
+        "topico": "Montagem empresa (resumo curto)",
+        "nota": "3–5 minutos · mesma âncora bíblica.",
+        "data": "20/11/2026"
+      }
+    ],
+    "stepIndex": 9,
+    "updatedAt": "2026-11-20T16:45:00.000Z",
+    "createdAt": "2026-11-20T16:45:00.000Z"
+  },
+  {
     "id": "msg_seed_igreja",
     "frente": "igreja",
     "tema": "O Pai que corre ao encontro",

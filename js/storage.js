@@ -41,18 +41,27 @@ export function downloadJson(filename, data) {
   URL.revokeObjectURL(url);
 }
 
+/** Carrega seeds e acrescenta itens novos por id (sem apagar o que o usuário já editou). */
 export async function mergeSeedData(store) {
   const files = [
     ["data/messages.json", "messages"],
     ["data/ebd-lessons.json", "ebd"],
   ];
   for (const [path, key] of files) {
-    if (store[key]?.length) continue;
     try {
       const res = await fetch(path);
       if (!res.ok) continue;
       const json = await res.json();
-      store[key] = Array.isArray(json) ? json : json[key] || [];
+      const seeds = Array.isArray(json) ? json : json[key] || [];
+      if (!store[key]?.length) {
+        store[key] = seeds;
+        continue;
+      }
+      const have = new Set(store[key].map((x) => x.id));
+      const missing = seeds.filter((s) => s.id && !have.has(s.id));
+      if (missing.length) {
+        store[key] = [...missing, ...store[key]];
+      }
     } catch {
       /* offline / file open */
     }
